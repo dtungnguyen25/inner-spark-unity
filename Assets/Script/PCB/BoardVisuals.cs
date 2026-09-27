@@ -48,6 +48,8 @@ namespace Pcb
             }
             foreach (var node in board.Nodes)
                 BuildNode(root, board, node, theme, node.IsVia ? both : node.layer == PcbLayer.Front ? front : back);
+            foreach (var decor in board.Decorations)
+                BuildDecoration(root, board, decor, theme, decor.layer == PcbLayer.Front ? front : back);
 
             foreach (var tr in root.GetComponentsInChildren<Transform>(true))
             {
@@ -149,6 +151,29 @@ namespace Pcb
                     break;
                 }
             }
+        }
+
+        static void BuildDecoration(Transform root, Board board, PcbDecoration decor, PcbTheme theme, List<Renderer> list)
+        {
+            float t = theme.boardThickness;
+            Vector2 p = board.WorldToLocal(decor.transform.position);
+            var g = Group(root, decor.name, new Vector3(p.x, p.y, Surface(decor.layer, t)), decor);
+            var rotation = Quaternion.Euler(0f, 0f, decor.rotationDegrees) *
+                (decor.layer == PcbLayer.Back ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity);
+
+            var model = theme.GetDecorationPrefab(decor.type);
+            if (model)
+            {
+                var m = Object.Instantiate(model, g, false);
+                m.transform.localRotation = rotation;
+                list.AddRange(m.GetComponentsInChildren<Renderer>(true));
+                return;
+            }
+
+            // Generic placeholder until real art is assigned in PcbTheme.decorationPrefabs.
+            float thickness = 0.02f;
+            Part(g, Cube, new Vector3(0f, 0f, Out(decor.layer) * thickness * 0.5f), rotation,
+                new Vector3(0.22f, 0.12f, thickness), theme.metalMaterial, list);
         }
 
         static Transform Group(Transform parent, string name, Vector3 localPosition, Component owner)

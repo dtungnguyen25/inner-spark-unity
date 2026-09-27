@@ -32,6 +32,7 @@ namespace Pcb
 
         readonly List<PcbNode> nodes = new List<PcbNode>();
         readonly List<Trace> traces = new List<Trace>();
+        readonly List<PcbDecoration> decorations = new List<PcbDecoration>();
         readonly Dictionary<PcbNode, List<Exit>> exits = new Dictionary<PcbNode, List<Exit>>();
         static readonly List<Exit> NoExits = new List<Exit>();
 
@@ -45,6 +46,7 @@ namespace Pcb
         public PcbLayer View { get; private set; }
         public IReadOnlyList<PcbNode> Nodes => nodes;
         public IReadOnlyList<Trace> Traces => traces;
+        public IReadOnlyList<PcbDecoration> Decorations => decorations;
         public Vector2 Size => (Vector2)sizeInCells * cellSize;
         public float Thickness => theme ? theme.boardThickness : 0.16f;
         /// <summary>World-space centre of the board volume.</summary>
@@ -69,6 +71,7 @@ namespace Pcb
         {
             GetComponentsInChildren(true, nodes);
             GetComponentsInChildren(true, traces);
+            GetComponentsInChildren(true, decorations);
             RemoveLegacyComponents();
             BuildGraph();
 
@@ -202,6 +205,11 @@ namespace Pcb
                     Add(Id(t)); Add(Id(t.from)); Add(Id(t.to));
                     Add((int)t.layer); Add(t.bends.Count);
                     foreach (var b in t.bends) AddV(b);
+                }
+                foreach (var d in decorations)
+                {
+                    Add(Id(d)); Add((int)d.type); Add((int)d.layer);
+                    AddV(WorldToLocal(d.transform.position)); Add(Mathf.RoundToInt(d.rotationDegrees * 1000f));
                 }
                 return h;
             }

@@ -8,11 +8,11 @@ using UnityEngine;
 /// </summary>
 public partial class PcbLevelEditorWindow : EditorWindow
 {
-    enum Tool { Select, Node, Trace, Erase }
+    enum Tool { Select, Node, Trace, Erase, Decoration }
 
     struct Issue { public string message; public Object target; }
 
-    static readonly string[] ToolNames = { "Select", "Node", "Trace", "Erase" };
+    static readonly string[] ToolNames = { "Select", "Node", "Trace", "Erase", "Decor" };
     static readonly string[] SideNames = { "Front", "Back" };
     static readonly Color FrontColor = new Color(1f, 0.85f, 0.4f);
     static readonly Color BackColor = new Color(0.5f, 0.85f, 1f);
@@ -21,6 +21,8 @@ public partial class PcbLevelEditorWindow : EditorWindow
     Tool tool = Tool.Node;
     NodeType placeType = NodeType.Capacitor;
     bool autoRoute = true;
+    DecorType decorType = DecorType.Resistor;
+    float decorRotation = 0f;
     Vector2 scroll;
     readonly List<Issue> issues = new List<Issue>();
     bool validated;
@@ -33,6 +35,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
     PcbNode dragNode;
     Trace dragTrace;
     int dragBend = -1;
+    PcbDecoration dragDecor;
 
     [MenuItem("Tools/PCB/Level Editor")]
     static void Open() => GetWindow<PcbLevelEditorWindow>("PCB Editor");
@@ -119,6 +122,11 @@ public partial class PcbLevelEditorWindow : EditorWindow
         }
         if (tool == Tool.Node) placeType = (NodeType)EditorGUILayout.EnumPopup("Node Type", placeType);
         if (tool == Tool.Trace) autoRoute = EditorGUILayout.Toggle("Auto 45° Routing", autoRoute);
+        if (tool == Tool.Decoration)
+        {
+            decorType = (DecorType)EditorGUILayout.EnumPopup("Decor Type", decorType);
+            decorRotation = EditorGUILayout.Slider("Rotation", decorRotation, 0f, 360f);
+        }
         EditorGUILayout.HelpBox(HelpText(), MessageType.None);
 
         EditorGUILayout.Space();
@@ -157,7 +165,10 @@ public partial class PcbLevelEditorWindow : EditorWindow
                        "Shift+Click empty: finish with a new capacitor.\n" +
                        "Hold Ctrl: route diagonal first.   Backspace: undo bend.   Esc: cancel.";
             case Tool.Erase:
-                return "Click a node: delete it and its traces.\nClick a trace: delete it.";
+                return "Click a node: delete it and its traces.\nClick a trace: delete it.\nClick a decoration: delete it.";
+            case Tool.Decoration:
+                return "Click empty grid: place a decoration on the current side.\n" +
+                       "Drag a decoration: move it.   Ctrl+Click: change its type/rotation.";
             default:
                 return "Normal Unity selection. Select nodes/traces to edit them in the Inspector.";
         }
@@ -229,6 +240,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
             case Tool.Node: NodeTool(e, id, mouse, snapped); break;
             case Tool.Trace: TraceTool(e, mouse, snapped); break;
             case Tool.Erase: EraseTool(e, mouse); break;
+            case Tool.Decoration: DecorationTool(e, id, mouse, snapped); break;
         }
 
         if (e.type == EventType.MouseMove || e.type == EventType.MouseDrag) sceneView.Repaint();
@@ -264,6 +276,11 @@ public partial class PcbLevelEditorWindow : EditorWindow
             if (!n || n.IsVia || n.layer != hidden) continue;
             if (n.type == NodeType.Goal) Handles.DrawWireCube(n.transform.position, new Vector3(n.chipSize.x, n.chipSize.y, 0f));
             else Handles.DrawWireDisc(n.transform.position, board.transform.forward, board.cellSize * 0.35f, 2f);
+        }
+        foreach (var d in board.Decorations)
+        {
+            if (!d || d.layer != hidden) continue;
+            Handles.DrawWireDisc(d.transform.position, board.transform.forward, board.cellSize * 0.25f, 2f);
         }
     }
 
@@ -487,6 +504,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
     {
         var node = PickNode(mouse);
         var trace = node ? null : PickTrace(mouse);
+        var decor = (node || trace) ? null : PickDecoration(mouse);
 
         if (e.type == EventType.MouseDown && e.button == 0 && !e.alt)
         {
@@ -499,6 +517,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
                 Undo.DestroyObjectImmediate(node.gameObject);
             }
             else if (trace) Undo.DestroyObjectImmediate(trace.gameObject);
+            else if (decor) Undo.DestroyObjectImmediate(decor.gameObject);
             Undo.CollapseUndoOperations(group);
             board.Rebuild();
             e.Use();
@@ -514,6 +533,92 @@ public partial class PcbLevelEditorWindow : EditorWindow
             Handles.color = red;
             Handles.DrawAAPolyLine(8f, path.ToArray());
         }
+        else if (decor) HighlightDecoration(decor, red);
+    }
+
+    // ---------------------------------------------------------------- Decoration tool
+
+    void DecorationTool(Event e, int id, Vector2 mouse, Vector2 snapped)
+    {
+        switch (e.type)
+        {
+            case EventType.MouseDown when e.button == 0 && !e.alt:
+            {
+                var hit = PickDecoration(mouse);
+                if (hit && e.control)
+                {
+                    Undo.RecordObject(hit, "Change Decoration Type");
+                    hit.type = decorType;
+                    hit.rotationDegrees = decorRotation;
+                    hit.name = DecorationName(decorType);
+                }
+                else if (hit) dragDecor = hit;
+                else dragDecor = CreateDecoration(snapped, decorType);
+                GUIUtility.hotControl = id;
+                e.Use();
+                break;
+            }
+            case EventType.MouseDrag when GUIUtility.hotControl == id:
+                if (dragDecor)
+                {
+                    Undo.RecordObject(dragDecor.transform, "Move Decoration");
+                    dragDecor.transform.position = board.LocalToWorld(snapped);
+                    board.Rebuild();
+                }
+                e.Use();
+                break;
+            case EventType.MouseUp when GUIUtility.hotControl == id:
+                GUIUtility.hotControl = 0;
+                dragDecor = null;
+                e.Use();
+                break;
+            case EventType.Repaint:
+                var hover = PickDecoration(mouse);
+                if (hover) HighlightDecoration(hover, Color.white);
+                else DrawCursor(snapped, SideColor);
+                break;
+        }
+    }
+
+    PcbDecoration PickDecoration(Vector2 local)
+    {
+        PcbDecoration best = null;
+        float bestDistance = board.cellSize * 0.6f;
+        foreach (var d in board.Decorations)
+        {
+            if (!d || d.layer != board.editorView) continue;
+            float dist = Vector2.Distance(local, board.WorldToLocal(d.transform.position));
+            if (dist < bestDistance) { bestDistance = dist; best = d; }
+        }
+        return best;
+    }
+
+    void HighlightDecoration(PcbDecoration decor, Color color)
+    {
+        Handles.color = color;
+        Handles.DrawWireDisc(decor.transform.position, Vector3.forward, board.cellSize * 0.4f, 3f);
+    }
+
+    PcbDecoration CreateDecoration(Vector2 local, DecorType type)
+    {
+        var go = new GameObject(DecorationName(type));
+        go.transform.SetParent(Container("Decorations"), false);
+        go.transform.position = board.LocalToWorld(local);
+        var decor = go.AddComponent<PcbDecoration>();
+        decor.type = type;
+        decor.layer = board.editorView;
+        decor.rotationDegrees = decorRotation;
+        Undo.RegisterCreatedObjectUndo(go, "Create " + type);
+        board.Rebuild();
+        return decor;
+    }
+
+    string DecorationName(DecorType type)
+    {
+        int count = 0;
+        foreach (var d in board.Decorations) if (d && d.type == type) count++;
+        string side = board.editorView == PcbLayer.Front ? " F" : " B";
+        return $"{type}{side} {count + 1:00}";
     }
 
     // ---------------------------------------------------------------- helpers

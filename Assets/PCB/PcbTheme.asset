@@ -26,6 +26,9 @@ MonoBehaviour:
   viaPrefab: {fileID: 5081282958106826189, guid: f7416e6b361b4824f9125cb2e87643c8, type: 3}
   startPrefab: {fileID: 1509393273787007909, guid: ed766568b150b3f478867ac7c81db4a4, type: 3}
   goalPrefab: {fileID: 6253218023686254846, guid: f02e0496086a7274baf3a231214398f9, type: 3}
+  decorationPrefabs:
+  - type: 0
+    prefab: {fileID: 8842654137159988500, guid: 5095f2fd5d09b824ca3abe811e246e3f, type: 3}
   background: {r: 0.89411765, g: 0.89411765, b: 0.89411765, a: 1}
   boardThickness: 0.16
   boardMargin: 0.5

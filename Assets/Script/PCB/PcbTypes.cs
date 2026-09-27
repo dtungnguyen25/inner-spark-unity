@@ -10,6 +10,19 @@ namespace Pcb
         Goal       // chip that ends the level
     }
 
+    /// <summary>Purely cosmetic PCB set-dressing. Never a stop point, never part of the movement graph.</summary>
+    public enum DecorType
+    {
+        Resistor,
+        IC,
+        Diode,
+        Transistor,
+        ScrewHole,
+        JumperWire,
+        SilkscreenLabel,
+        CopperPour
+    }
+
     public static class PcbLayerExtensions
     {
         public static PcbLayer Other(this PcbLayer layer) =>

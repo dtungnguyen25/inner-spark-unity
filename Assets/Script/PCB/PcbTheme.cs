@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Pcb
@@ -24,6 +25,22 @@ namespace Pcb
         public GameObject viaPrefab;
         public GameObject startPrefab;
         public GameObject goalPrefab;
+
+        [Serializable]
+        public struct DecorationLook
+        {
+            public DecorType type;
+            public GameObject prefab;
+        }
+        [Header("Decorations (optional models, empty = generic placeholder box)")]
+        public DecorationLook[] decorationPrefabs;
+
+        public GameObject GetDecorationPrefab(DecorType type)
+        {
+            foreach (var d in decorationPrefabs)
+                if (d.type == type) return d.prefab;
+            return null;
+        }
 
         [Header("Scene")]
         public Color background = new Color32(228, 228, 228, 255);
