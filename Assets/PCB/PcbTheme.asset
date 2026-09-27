@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2437748c8c4c2ea4e9d560237a69fdc5, type: 3}
+  m_Name: PcbTheme
+  m_EditorClassIdentifier: Assembly-CSharp::Pcb.PcbTheme
+  boardMaterial: {fileID: 2100000, guid: 615ecc1f86992684aad26bf9a97d8b89, type: 2}
+  copperMaterial: {fileID: 2100000, guid: d0139ad8740e45449a8390d6eb112a86, type: 2}
+  capacitorMaterial: {fileID: 2100000, guid: c0d39396a9d1103419264f6dd0d6cb3d, type: 2}
+  metalMaterial: {fileID: 2100000, guid: cfa38c34f1ef11e45aeeb7f4fca422dc, type: 2}
+  holeMaterial: {fileID: 2100000, guid: 2b2746e09dcb0014c8257465a8303fe2, type: 2}
+  chipMaterial: {fileID: 2100000, guid: 5f4e4a0f83d7e7b48a87b7d9d48a4d4c, type: 2}
+  plugMaterial: {fileID: 2100000, guid: 7dc0d6e9cd2286e4dae11ad3a33b9dbb, type: 2}
+  sparkMaterial: {fileID: 2100000, guid: 870ae74c03dc55a4da15da158ddfa5f7, type: 2}
+  spriteMaterial: {fileID: 2100000, guid: ed1afe98f12c83b46926106649caa863, type: 2}
+  triangle: {fileID: 21300000, guid: e01b62cdb89699542995a07ef0599de5, type: 3}
+  capacitorPrefab: {fileID: 7043062803041349706, guid: f83a24d14df23244b8393346d1676868, type: 3}
+  viaPrefab: {fileID: 5081282958106826189, guid: f7416e6b361b4824f9125cb2e87643c8, type: 3}
+  startPrefab: {fileID: 1509393273787007909, guid: ed766568b150b3f478867ac7c81db4a4, type: 3}
+  goalPrefab: {fileID: 6253218023686254846, guid: f02e0496086a7274baf3a231214398f9, type: 3}
+  background: {r: 0.89411765, g: 0.89411765, b: 0.89411765, a: 1}
+  boardThickness: 0.16
+  boardMargin: 0.5
+  traceWidth: 0.16
+  traceHeight: 0.025
+  capacitorSize: 0.252
+  capacitorHeight: 0.21
+  viaSize: 0.252
+  viaLip: 0.02
+  chipHeight: 0.14
+  plugSize: {x: 0.46, y: 0.34, z: 0.26}
+  spark: {r: 0.5254902, g: 0.8901961, b: 1, a: 1}
+  sparkBlocked: {r: 1, g: 0.3529412, b: 0.3529412, a: 1}
+  sparkGlow: 4
+  sparkSize: 0.16
+  sparkLightRange: 1.5
+  sparkLightIntensity: 2
+  editorGhost: {r: 1, g: 1, b: 1, a: 0.35}

@@ -1,0 +1,25 @@
+fileFormatVersion: 2
+guid: 2437748c8c4c2ea4e9d560237a69fdc5
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - boardMaterial: {instanceID: 0}
+  - copperMaterial: {instanceID: 0}
+  - capacitorMaterial: {instanceID: 0}
+  - metalMaterial: {instanceID: 0}
+  - holeMaterial: {instanceID: 0}
+  - chipMaterial: {instanceID: 0}
+  - plugMaterial: {instanceID: 0}
+  - sparkMaterial: {instanceID: 0}
+  - spriteMaterial: {instanceID: 0}
+  - triangle: {instanceID: 0}
+  - capacitorPrefab: {instanceID: 0}
+  - viaPrefab: {instanceID: 0}
+  - startPrefab: {instanceID: 0}
+  - goalPrefab: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
