@@ -85,6 +85,7 @@ namespace Pcb
         void Spawn()
         {
             if (!template) { Debug.LogError($"[PCB] Level {index + 1} is missing from the Level List.", this); return; }
+            if (spark) spark.Arrived -= OnArrived;
             if (rig) Destroy(rig.gameObject); // takes the board and the spark with it
             won = false;
 
