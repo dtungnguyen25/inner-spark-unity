@@ -22,6 +22,8 @@ namespace Pcb
 
         public string levelName = "New Level";
         public PcbTheme theme;
+        [Tooltip("Optional. Shown once, before the player gets control, when this level starts.")]
+        public DialogSequence dialogSequence;
         [Min(0.1f)] public float cellSize = 0.5f;
         public Vector2Int sizeInCells = new Vector2Int(32, 20);
         [Tooltip("How closely input must match a trace to take it (1 = exact, 0.5 = within 60 degrees).")]
@@ -103,7 +105,7 @@ namespace Pcb
             exits.Clear();
             foreach (var t in traces)
             {
-                if (!t.IsValid) continue;
+                if (!t || !t.IsValid) continue;
                 AddExit(t.from, t, false, t.to);
                 AddExit(t.to, t, true, t.from);
             }
@@ -197,17 +199,20 @@ namespace Pcb
                 Add(sizeInCells.x); Add(sizeInCells.y); Add(Mathf.RoundToInt(cellSize * 1000f));
                 foreach (var n in nodes)
                 {
+                    if (!n) continue; // can go missing mid-rebuild (deleted via Undo/Erase while editing)
                     Add(Id(n)); Add((int)n.type); Add((int)n.layer);
                     AddV(NodePosition(n)); AddV(n.chipSize); Add(n.name.GetHashCode());
                 }
                 foreach (var t in traces)
                 {
+                    if (!t) continue;
                     Add(Id(t)); Add(Id(t.from)); Add(Id(t.to));
                     Add((int)t.layer); Add(t.bends.Count);
                     foreach (var b in t.bends) AddV(b);
                 }
                 foreach (var d in decorations)
                 {
+                    if (!d) continue;
                     Add(Id(d)); Add((int)d.type); Add((int)d.layer);
                     AddV(WorldToLocal(d.transform.position)); Add(Mathf.RoundToInt(d.rotationDegrees * 1000f));
                 }
@@ -220,11 +225,12 @@ namespace Pcb
         {
             foreach (var n in nodes)
             {
+                if (!n) continue;
                 if (n.TryGetComponent(out SpriteRenderer sr)) Kill(sr);
                 if (n.transform.localScale != Vector3.one && !Application.isPlaying) n.transform.localScale = Vector3.one;
             }
             foreach (var t in traces)
-                if (t.TryGetComponent(out LineRenderer lr)) Kill(lr);
+                if (t && t.TryGetComponent(out LineRenderer lr)) Kill(lr);
             var background = transform.Find("Background");
             if (background && background.GetComponent<SpriteRenderer>()) Kill(background.gameObject);
         }
