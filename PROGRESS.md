@@ -5,6 +5,70 @@ See [DESIGN.md](DESIGN.md) for the design reference / architecture map.
 
 ---
 
+## 2026-09-28 (evening) — art investigation + model slots & per-level look system
+
+**Session summary:** Checked the imported art, then built a way to use it: model slots for the
+board and traces, and a system for choosing different models per level and per node, driven from
+the Level Editor.
+
+### Findings (no code changes)
+- **`Mesh_Sparky_Animated.fbx` has no mesh in it.** Parsed the file directly: 39 bones +
+  4 animations (`Sparky_Idle`, `Sparky_Move_Start`, `Sparky_Move_Finish`, `Sparky_Win`), but
+  0 geometry, 0 skin deformers, 0 materials. The import settings are fine — it's an export problem
+  (probably "Selected Objects" with only the armature selected). **Ask the artist to re-export with
+  the mesh + armature**; replace the `.fbx` and keep its `.meta`.
+- Imported model sizes (Unity units): `Path_module` 1.0 long × 0.15 wide × 0.10 tall;
+  `PCBboard_module*` a 1×1 tile, 0.02 thick. All exported Y-up (lying flat), so they need a
+  wrapper prefab rotated to face −Z.
+- `Level/LevelScene_3D.fbx_Scene.fbx` is a town scene (trees, cars, vending machine…), not a PCB
+  level — ask the artist whether it's background art or included by mistake.
+
+### Code changes
+- **Board tile + trace + trace bend model slots** (`PcbTheme.boardTilePrefab`, `tracePrefab`,
+  `traceBendPrefab`, plus `boardTileSize`). Unlike node models (placed at authored size), these
+  are **resized to fit** the theme's numbers (`BoardVisuals.Fit`), so `traceWidth`/`traceHeight`/
+  `boardThickness` stay the single source of truth for gameplay (spark height, camera framing).
+  - Board: tile repeated across the board + margin, count rounded to a whole number.
+  - Trace: one stretched piece per straight segment; with a bend prefab, pieces stop at the bend
+    and the bend piece is placed there; without one, pieces overlap half a width at corners.
+  - Empty slots = the old built-in shapes, so nothing changed for existing levels.
+- **Per-level / per-node look system.** Which model wins: node's own `model` → level's
+  `Board.look` → theme slot.
+  - `Board.BoardLook look` (saved in the level prefab): board tile, trace, bend, and a default
+    model per node type. Resolution helpers on `Board` (`NodeModel`, `TraceModel`…), which
+    `BoardVisuals` now uses. Added to `Board.ComputeSignature` so edits redraw immediately.
+  - `PcbNode.model` / `PcbDecoration.model`: optional per-object override.
+  - `PcbTheme` **Catalog** (`capacitorVariants`, `viaVariants`, `startVariants`, `goalVariants`,
+    `boardTileVariants`, `traceVariants`, `traceBendVariants`): the choices the editor offers.
+    Decoration variants = several `decorationPrefabs` entries of the same type (first = default).
+- **Level Editor** (new file `PcbLevelEditorWindow.Look.cs`):
+  - **Look (this level)** section: dropdowns for each look field + **Copy Look From** another level.
+  - **Paint** tool: pick Nodes/Decorations + type + a thumbnail, click to paint, Shift+Click to
+    reset, **Paint All / Reset All** buttons. Only paints objects of the chosen type. Undo works.
+  - Ctrl+Click type change (Node/Decor tools) now clears a painted model from the old type.
+  - Fixed the stale Play-mode note (mentioned the removed Prev/Next keys).
+- **Node rotation:** `PcbNode.rotationDegrees` spins a node's model (or built-in shapes) around
+  the board normal; visual only, trace directions unaffected. Level Editor Node tool has a
+  Rotation slider (15° steps) applied to new nodes; Shift+Click applies it to an existing node.
+  Goal chip click area / outlines follow the rotation. **Tested by the designer in Unity: working.**
+- Runtime + editor code compiled with `dotnet build`; **not yet tested in Unity by me**.
+
+### Designer-side setup (seen in the project)
+New prefabs in `Assets/PCB/Prefabs/`: `Board_Tile`, `Trace_Path`, `Capacitor Demo`,
+`Capacitor Demo 1`, `Start Demo`, `Goal Demo`, `Via Demo` (old `Capacitor F` / `Start F` /
+`Goal B` / `Via` prefabs removed). Guided on adding capacitor variants via the theme's Catalog.
+
+### Not done yet / pending
+- Test in Unity: board tiles + traces + bends on both sides, Paint tool, Look section, Copy Look,
+  saving/reloading a level keeps painted models, unsaved-changes indicator.
+- Artist: re-export the character FBX with the mesh; clarify the town scene FBX.
+- Open questions from the look design: a "random from catalog" option for level defaults?
+  Are the Switch ON/OFF and LED models cosmetic (→ catalog) or future mechanics
+  (→ `TraceMechanic`/`NodeMechanic`)?
+- Possible UX tweak: the Paint palette shows the default model twice ("Default (X)" and "X") —
+  could hide the second when it matches.
+- Pause-input fix from earlier today still worth a quick re-test.
+
 ## 2026-09-28 (later)
 
 **Changes made:**

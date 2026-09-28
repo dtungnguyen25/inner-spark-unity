@@ -125,6 +125,7 @@ namespace Pcb
             PcbLayer side = node.IsVia ? PcbLayer.Front : node.layer;
             float o = Out(side);
             var g = Group(root, node.name, new Vector3(p.x, p.y, node.IsVia ? 0f : Surface(side, t)), node);
+            g.localRotation = Quaternion.Euler(0f, 0f, node.rotationDegrees); // spin around the board normal
 
             var model = board.NodeModel(node);
             if (model)

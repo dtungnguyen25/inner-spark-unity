@@ -24,6 +24,8 @@ is it abstract puzzle-only?
 
 ## 2. Controls
 
+*(Player controls. Level Editor controls are listed in the editor window's help box for each tool.)*
+
 | Action | Keyboard | Gamepad |
 |---|---|---|
 | Move | WASD / Arrow keys | Left stick / D-pad |
@@ -67,20 +69,21 @@ blocked while a dialog is showing.
 Runtime (`Assets/Script/PCB/`):
 - **Board.cs** — collects nodes/traces/decorations under it, builds the exit graph (`TryPickExit`), triggers visual rebuilds, tracks front/back visibility.
 - **Trace.cs** — path between two nodes (with bends), exposes path/distance queries used by both gameplay and the editor.
-- **PcbNode.cs** — data-only component: type, layer, (goal) chip size.
+- **PcbNode.cs** — data-only component: type, layer, (goal) chip size, optional `model` override, and `rotationDegrees` (visual spin around the board normal, measured in board space like decorations — gameplay/trace directions ignore it).
 - **PcbDecoration.cs** — data-only cosmetic component, deliberately excluded from the graph. *(Lives at `Assets/Script/PcbDecoration.cs`, one level up from the rest — same `Pcb` namespace.)*
 - **Spark.cs** — player controller: reads input, walks the exit graph, animates movement/flip, builds its own visuals (core, glow, trail, direction arrows) from the theme.
 - **BoardRig.cs** — perspective camera framing, turn-over animation, mouse-drag tilt.
-- **BoardVisuals.cs** — procedurally builds the entire 3D look (board slab, traces, node models, decorations) from primitive meshes; everything it creates is `HideFlags.DontSave` so only gameplay data is ever serialized.
+- **BoardVisuals.cs** — procedurally builds the entire 3D look (board slab, traces, node models, decorations); everything it creates is `HideFlags.DontSave` so only gameplay data is ever serialized. Uses built-in cube/cylinder shapes unless a model is assigned. Node/decoration models are placed at authored size; board tile / trace / trace bend models are **resized to fit** the theme's sizes (`Fit`), so the theme's numbers stay the source of truth for gameplay.
 - **LevelManager.cs** — one per scene; owns the level list, spawn/restart/next/prev flow, win detection, on-screen HUD (`OnGUI`).
 - **LevelList.cs** — ordered `ScriptableObject` list of level prefabs (the "play order").
-- **PcbTheme.cs** — ScriptableObject: materials, optional model overrides per node/decoration type, and every tunable size/color.
+- **PcbTheme.cs** — ScriptableObject: materials, default model slots (nodes, decorations, board tile, trace, trace bend), a **Catalog** of variant models offered by the Level Editor, and every tunable size/color.
 - **PcbTypes.cs** — the core enums (`PcbLayer`, `NodeType`, `DecorType`).
 - **PcbMechanics.cs** — 🟡 **scaffolding only, currently unused.** Defines `TraceMechanic` (`CanEnter` / `OnTraversed`) and `NodeMechanic` (`OnSparkArrive` / `OnSparkLeave`) base classes meant for gameplay modifiers (resistor blocking one direction, a switch, a key pickup, a locked door...). No concrete subclass exists yet — this is the intended extension point for adding puzzle mechanics beyond plain routing + flipping.
 - **PcbVisualOwner.cs** — tags generated 3D parts with the source node/trace/decoration so scene clicks select the real object.
 
 Editor tooling (`Assets/Script/PCB/Editor/`):
 - **PcbAssetSetup.cs** — auto-generates the theme, materials, and sprites under `Assets/PCB` on first load; also upgrades an incomplete theme.
+- **PcbLevelEditorWindow.Look.cs** — the Level Editor's **Look (this level)** section (per-level default models, Copy Look From) and **Paint** tool (per-node/decoration models).
 - **PcbLevelEditorWindow.cs** + **PcbLevelEditorWindow.Levels.cs** — `Tools > PCB > Level Editor`. Scene-view tools to place/drag/erase nodes, traces (with 45° auto-routing), and decorations; save/load levels as prefabs; a content-hash based "unsaved changes" indicator; and a **Validate Level** pass that flags: wrong start/goal counts, traces crossing layers without a via, ambiguous overlapping exits, exits only reachable via diagonal input, and vias with traces on only one side.
 - **PcbSelectionRedirect.cs** — global hook so clicking a generated visual in the Scene view selects its owning node/trace instead.
 
@@ -98,6 +101,9 @@ Scenes: `MainMenu` (build index 0) → `SampleScene` (gameplay, build index 1).
 
 - A level = a `Board` prefab under `Assets/PCB/Levels/`, referenced (in play order) by the single `LevelList.asset` at `Assets/PCB/LevelList.asset`.
 - Saved prefabs contain **gameplay data only** — nodes, traces, decorations, and their settings. The 3D look is always regenerated at load (`Board.Rebuild`) from the shared `PcbTheme`, never serialized.
+- **Visual choices are per level, stored as references:** which model is used follows
+  node/decoration `model` → the level's `Board.look` → the theme slot. Levels store references to
+  the chosen prefabs (not catalog indices), so reordering the theme's catalog never breaks a level.
 - Levels are authored directly by drawing in the Scene view with the Level Editor window open, not through any external tool or file format.
 - Current levels: `Level 1`, `Level 02`, `Level 03`, `Level 04` (4 total as of 2026-09-27).
 

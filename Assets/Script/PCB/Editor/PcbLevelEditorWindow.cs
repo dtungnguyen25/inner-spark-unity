@@ -20,6 +20,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
     Board board;
     Tool tool = Tool.Node;
     NodeType placeType = NodeType.Capacitor;
+    float nodeRotation = 0f;
     bool autoRoute = true;
     DecorType decorType = DecorType.Resistor;
     float decorRotation = 0f;
@@ -121,7 +122,12 @@ public partial class PcbLevelEditorWindow : EditorWindow
             CancelTrace();
             SceneView.RepaintAll();
         }
-        if (tool == Tool.Node) placeType = (NodeType)EditorGUILayout.EnumPopup("Node Type", placeType);
+        if (tool == Tool.Node)
+        {
+            placeType = (NodeType)EditorGUILayout.EnumPopup("Node Type", placeType);
+            // 15° steps: lands exactly on 45°/90° and matches the 45° trace routing.
+            nodeRotation = Mathf.Round(EditorGUILayout.Slider("Rotation", nodeRotation, 0f, 360f) / 15f) * 15f % 360f;
+        }
         if (tool == Tool.Trace) autoRoute = EditorGUILayout.Toggle("Auto 45° Routing", autoRoute);
         if (tool == Tool.Decoration)
         {
@@ -160,7 +166,8 @@ public partial class PcbLevelEditorWindow : EditorWindow
             case Tool.Node:
                 return "Click empty grid: place node on the current side.\n" +
                        "Drag a node: move it.   Drag a small square: move a trace bend.\n" +
-                       "Ctrl+Click a node: change it to the selected type.";
+                       "Ctrl+Click a node: change it to the selected type.\n" +
+                       "Shift+Click a node: give it the rotation below (new nodes get it too).";
             case Tool.Trace:
                 return "Click a node (or empty grid) to start.\n" +
                        "Click empty grid: add a bend.   Click a node: finish.\n" +
@@ -280,7 +287,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
         foreach (var n in board.Nodes)
         {
             if (!n || n.IsVia || n.layer != hidden) continue;
-            if (n.type == NodeType.Goal) Handles.DrawWireCube(n.transform.position, new Vector3(n.chipSize.x, n.chipSize.y, 0f));
+            if (n.type == NodeType.Goal) DrawChipOutline(n, 0f);
             else Handles.DrawWireDisc(n.transform.position, board.transform.forward, board.cellSize * 0.35f, 2f);
         }
         foreach (var d in board.Decorations)
@@ -332,6 +339,11 @@ public partial class PcbLevelEditorWindow : EditorWindow
                     if (hit.type != placeType) hit.model = null; // a painted model belongs to the old type
                     hit.type = placeType;
                     hit.name = NodeName(placeType);
+                }
+                else if (hit && e.shift)
+                {
+                    Undo.RecordObject(hit, "Rotate Node");
+                    hit.rotationDegrees = nodeRotation;
                 }
                 else if (hit) dragNode = hit;
                 else if (PickBend(mouse, out dragTrace, out dragBend)) { }
@@ -642,7 +654,8 @@ public partial class PcbLevelEditorWindow : EditorWindow
             Vector2 p = board.WorldToLocal(n.transform.position);
             if (n.type == NodeType.Goal)
             {
-                if (Mathf.Abs(local.x - p.x) <= n.chipSize.x * 0.5f && Mathf.Abs(local.y - p.y) <= n.chipSize.y * 0.5f) return n;
+                Vector2 q = Quaternion.Euler(0f, 0f, -n.rotationDegrees) * (local - p); // into the (rotated) chip's frame
+                if (Mathf.Abs(q.x) <= n.chipSize.x * 0.5f && Mathf.Abs(q.y) <= n.chipSize.y * 0.5f) return n;
                 continue;
             }
             float d = Vector2.Distance(local, p);
@@ -668,10 +681,16 @@ public partial class PcbLevelEditorWindow : EditorWindow
     {
         Handles.color = color;
         Vector3 p = node.transform.position;
-        if (node.type == NodeType.Goal)
-            Handles.DrawWireCube(p, new Vector3(node.chipSize.x + 0.1f, node.chipSize.y + 0.1f, 0f));
-        else
-            Handles.DrawWireDisc(p, Vector3.forward, board.cellSize * 0.5f, 3f);
+        if (node.type == NodeType.Goal) DrawChipOutline(node, 0.1f);
+        else Handles.DrawWireDisc(p, Vector3.forward, board.cellSize * 0.5f, 3f);
+    }
+
+    /// <summary>Wire rectangle of a goal chip, following its rotation.</summary>
+    void DrawChipOutline(PcbNode node, float padding)
+    {
+        var rotation = board.transform.rotation * Quaternion.Euler(0f, 0f, node.rotationDegrees);
+        using (new Handles.DrawingScope(Handles.color, Matrix4x4.TRS(node.transform.position, rotation, Vector3.one)))
+            Handles.DrawWireCube(Vector3.zero, new Vector3(node.chipSize.x + padding, node.chipSize.y + padding, 0f));
     }
 
     PcbNode CreateNode(Vector2 local, NodeType type)
@@ -682,6 +701,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
         var node = go.AddComponent<PcbNode>();
         node.type = type;
         node.layer = board.editorView;
+        node.rotationDegrees = nodeRotation;
         Undo.RegisterCreatedObjectUndo(go, "Create " + type);
         board.Rebuild();
         return node;

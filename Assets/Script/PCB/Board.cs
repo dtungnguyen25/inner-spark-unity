@@ -252,6 +252,7 @@ namespace Pcb
                 {
                     if (!n) continue; // can go missing mid-rebuild (deleted via Undo/Erase while editing)
                     Add(Id(n)); Add((int)n.type); Add((int)n.layer); Add(Id(n.model));
+                    Add(Mathf.RoundToInt(n.rotationDegrees * 1000f));
                     AddV(NodePosition(n)); AddV(n.chipSize); Add(n.name.GetHashCode());
                 }
                 foreach (var t in traces)
