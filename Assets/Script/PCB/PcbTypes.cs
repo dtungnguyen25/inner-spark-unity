@@ -7,7 +7,8 @@ namespace Pcb
         Capacitor, // stop point
         Via,       // stop point that exists on both sides; the spark can flip side here
         Start,     // where the spark spawns
-        Goal       // chip that ends the level
+        Goal,      // chip that ends the level
+        Switch     // toggle switch
     }
 
     /// <summary>Purely cosmetic PCB set-dressing. Never a stop point, never part of the movement graph.</summary>

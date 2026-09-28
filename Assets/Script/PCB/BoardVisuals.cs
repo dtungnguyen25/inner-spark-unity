@@ -95,7 +95,8 @@ namespace Pcb
                 NodeType.Capacitor => theme.capacitorPrefab,
                 NodeType.Via => theme.viaPrefab,
                 NodeType.Start => theme.startPrefab,
-                _ => theme.goalPrefab
+                NodeType.Goal => theme.goalPrefab,
+                _ => null
             };
             if (model)
             {
@@ -154,6 +155,13 @@ namespace Pcb
                             Part(g, Cube, pos, Quaternion.identity, scale, theme.metalMaterial, list);
                         }
                     }
+                    break;
+                }
+                case NodeType.Switch:
+                {
+                    float d = theme.capacitorSize, h = theme.capacitorHeight;
+                    Part(g, Cylinder, new Vector3(0f, 0f, o * h * 0.5f), Upright, new Vector3(d, h * 0.5f, d), theme.metalMaterial, list);
+                    Part(g, Cylinder, new Vector3(0f, 0f, o * (h + 0.008f)), Upright, new Vector3(d * 0.7f, 0.008f, d * 0.7f), theme.plugMaterial, list);
                     break;
                 }
             }
