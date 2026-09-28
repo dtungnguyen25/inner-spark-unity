@@ -151,6 +151,14 @@ MonoBehaviour:
   levelName: Level 1
   theme: {fileID: 11400000, guid: ffa1e0a639d45c241bbe1bad221dd486, type: 2}
   dialogSequence: {fileID: 11400000, guid: 7a16016d75d7bcf4b8a88cbada05dedb, type: 2}
+  look:
+    boardTile: {fileID: 0}
+    trace: {fileID: 0}
+    traceBend: {fileID: 0}
+    capacitor: {fileID: 0}
+    via: {fileID: 0}
+    start: {fileID: 0}
+    goal: {fileID: 0}
   cellSize: 0.5
   sizeInCells: {x: 5, y: 7}
   inputTolerance: 0.5
@@ -221,6 +229,7 @@ MonoBehaviour:
   type: 0
   layer: 0
   rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &287840108
 GameObject:
   m_ObjectHideFlags: 0
@@ -1137,6 +1146,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Pcb.PauseMenu
   mainMenuScene: MainMenu
   panel: {fileID: 1648472550}
+  restartButton: {fileID: 0}
 --- !u!114 &667429864
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1255,6 +1265,7 @@ MonoBehaviour:
   type: 0
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  model: {fileID: 7043062803041349706, guid: f83a24d14df23244b8393346d1676868, type: 3}
 --- !u!4 &732887442
 Transform:
   m_ObjectHideFlags: 0
@@ -2338,6 +2349,7 @@ MonoBehaviour:
   type: 0
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  model: {fileID: 7043062803041349706, guid: 70d481c5d228655428a938b3f65adab8, type: 3}
 --- !u!4 &1491093123
 Transform:
   m_ObjectHideFlags: 0
@@ -2385,6 +2397,7 @@ MonoBehaviour:
   type: 0
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  model: {fileID: 7043062803041349706, guid: 70d481c5d228655428a938b3f65adab8, type: 3}
 --- !u!4 &1504484083
 Transform:
   m_ObjectHideFlags: 0
@@ -2856,6 +2869,7 @@ MonoBehaviour:
   type: 0
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  model: {fileID: 7043062803041349706, guid: f83a24d14df23244b8393346d1676868, type: 3}
 --- !u!4 &1733351942
 Transform:
   m_ObjectHideFlags: 0
@@ -2941,6 +2955,7 @@ MonoBehaviour:
   type: 2
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  model: {fileID: 0}
 --- !u!4 &1853615125
 Transform:
   m_ObjectHideFlags: 0
@@ -3064,6 +3079,7 @@ MonoBehaviour:
   type: 0
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  model: {fileID: 7043062803041349706, guid: 70d481c5d228655428a938b3f65adab8, type: 3}
 --- !u!4 &1906337324
 Transform:
   m_ObjectHideFlags: 0
@@ -3111,6 +3127,7 @@ MonoBehaviour:
   type: 3
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  model: {fileID: 0}
 --- !u!4 &1971720147
 Transform:
   m_ObjectHideFlags: 0
@@ -3442,6 +3459,7 @@ MonoBehaviour:
   type: 0
   layer: 0
   rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &2067499204
 GameObject:
   m_ObjectHideFlags: 0

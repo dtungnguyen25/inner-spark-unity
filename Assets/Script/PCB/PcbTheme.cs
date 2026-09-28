@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Pcb
@@ -25,6 +26,12 @@ namespace Pcb
         public GameObject viaPrefab;
         public GameObject startPrefab;
         public GameObject goalPrefab;
+        [Tooltip("One repeatable board tile, thickness along Z. Resized to fill boardTileSize x boardTileSize x boardThickness and repeated across the whole board.")]
+        public GameObject boardTilePrefab;
+        [Tooltip("One straight piece of trace, length along X, height along Z. Stretched to each segment's length x traceWidth x traceHeight.")]
+        public GameObject tracePrefab;
+        [Tooltip("Optional, used with Trace Prefab: piece placed at every bend (e.g. a round disc). Resized to traceWidth x traceWidth x traceHeight; X points along the incoming segment. Empty = straight pieces overlap at corners instead.")]
+        public GameObject traceBendPrefab;
 
         [Serializable]
         public struct DecorationLook
@@ -33,14 +40,51 @@ namespace Pcb
             public GameObject prefab;
         }
         [Header("Decorations (optional models, empty = generic placeholder box)")]
+        [Tooltip("Several entries of the same type = variants for the Paint tool; the first one is the default.")]
         public DecorationLook[] decorationPrefabs;
+
+        [Header("Catalog: extra choices for the Level Editor's Look section and Paint tool (the slots above stay the defaults)")]
+        public GameObject[] capacitorVariants;
+        public GameObject[] viaVariants;
+        public GameObject[] startVariants;
+        public GameObject[] goalVariants;
+        public GameObject[] boardTileVariants;
+        public GameObject[] traceVariants;
+        public GameObject[] traceBendVariants;
 
         public GameObject GetDecorationPrefab(DecorType type)
         {
+            if (decorationPrefabs == null) return null;
             foreach (var d in decorationPrefabs)
                 if (d.type == type) return d.prefab;
             return null;
         }
+
+        /// <summary>Every model listed for a decoration type, default first.</summary>
+        public void GetDecorationVariants(DecorType type, List<GameObject> result)
+        {
+            result.Clear();
+            if (decorationPrefabs == null) return;
+            foreach (var d in decorationPrefabs)
+                if (d.type == type && d.prefab && !result.Contains(d.prefab)) result.Add(d.prefab);
+        }
+
+        /// <summary>The theme's default model for a node type (null = simple shapes).</summary>
+        public GameObject NodePrefab(NodeType type) => type switch
+        {
+            NodeType.Capacitor => capacitorPrefab,
+            NodeType.Via => viaPrefab,
+            NodeType.Start => startPrefab,
+            _ => goalPrefab
+        };
+
+        public GameObject[] NodeVariants(NodeType type) => type switch
+        {
+            NodeType.Capacitor => capacitorVariants,
+            NodeType.Via => viaVariants,
+            NodeType.Start => startVariants,
+            _ => goalVariants
+        };
 
         [Header("Scene")]
         public Color background = new Color32(228, 228, 228, 255);
@@ -49,6 +93,8 @@ namespace Pcb
         public float boardThickness = 0.16f;
         [Tooltip("Extra board around the outermost grid line, in world units.")]
         public float boardMargin = 0.5f;
+        [Tooltip("Board tile only: target size of one tile in world units. Tiles are resized slightly so a whole number of them fills the board.")]
+        [Min(0.1f)] public float boardTileSize = 1f;
 
         [Header("Traces")]
         public float traceWidth = 0.14f;

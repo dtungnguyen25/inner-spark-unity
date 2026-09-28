@@ -11,6 +11,36 @@ namespace Pcb
     [ExecuteAlways]
     public class Board : MonoBehaviour
     {
+        /// <summary>This level's own models. Empty entries fall back to the theme.</summary>
+        [System.Serializable]
+        public struct BoardLook
+        {
+            public GameObject boardTile;
+            public GameObject trace;
+            public GameObject traceBend;
+            [Tooltip("Default model for every node of that type on this level (a node's own Model still wins).")]
+            public GameObject capacitor, via, start, goal;
+
+            public GameObject For(NodeType type) => type switch
+            {
+                NodeType.Capacitor => capacitor,
+                NodeType.Via => via,
+                NodeType.Start => start,
+                _ => goal
+            };
+
+            public void Set(NodeType type, GameObject model)
+            {
+                switch (type)
+                {
+                    case NodeType.Capacitor: capacitor = model; break;
+                    case NodeType.Via: via = model; break;
+                    case NodeType.Start: start = model; break;
+                    default: goal = model; break;
+                }
+            }
+        }
+
         public struct Exit
         {
             public Trace trace;
@@ -24,6 +54,8 @@ namespace Pcb
         public PcbTheme theme;
         [Tooltip("Optional. Shown once, before the player gets control, when this level starts.")]
         public DialogSequence dialogSequence;
+        [Tooltip("This level's look (Level Editor > Look). Empty entries use the theme.")]
+        public BoardLook look;
         [Min(0.1f)] public float cellSize = 0.5f;
         public Vector2Int sizeInCells = new Vector2Int(32, 20);
         [Tooltip("How closely input must match a trace to take it (1 = exact, 0.5 = within 60 degrees).")]
@@ -166,6 +198,23 @@ namespace Pcb
             foreach (var r in backRenderers) if (r) r.enabled = showBothSides || View == PcbLayer.Back;
         }
 
+        // ---------------------------------------------------------------- look
+        // Which model to use: the object's own override, then this level's look, then the theme.
+
+        public GameObject BoardTileModel => look.boardTile ? look.boardTile : theme ? theme.boardTilePrefab : null;
+        public GameObject TraceModel => look.trace ? look.trace : theme ? theme.tracePrefab : null;
+        public GameObject TraceBendModel => look.traceBend ? look.traceBend : theme ? theme.traceBendPrefab : null;
+
+        public GameObject DefaultNodeModel(NodeType type)
+        {
+            var m = look.For(type);
+            return m ? m : theme ? theme.NodePrefab(type) : null;
+        }
+
+        public GameObject NodeModel(PcbNode node) => node.model ? node.model : DefaultNodeModel(node.type);
+        public GameObject DecorationModel(PcbDecoration decor) =>
+            decor.model ? decor.model : theme ? theme.GetDecorationPrefab(decor.type) : null;
+
         // ---------------------------------------------------------------- coordinates
 
         public Vector2 NodePosition(PcbNode node) => WorldToLocal(node.transform.position);
@@ -197,10 +246,13 @@ namespace Pcb
                 Add(Id(theme));
                 if (!Application.isPlaying) Add(JsonUtility.ToJson(theme).GetHashCode()); // live theme tweaks while editing
                 Add(sizeInCells.x); Add(sizeInCells.y); Add(Mathf.RoundToInt(cellSize * 1000f));
+                Add(Id(look.boardTile)); Add(Id(look.trace)); Add(Id(look.traceBend));
+                Add(Id(look.capacitor)); Add(Id(look.via)); Add(Id(look.start)); Add(Id(look.goal));
                 foreach (var n in nodes)
                 {
                     if (!n) continue; // can go missing mid-rebuild (deleted via Undo/Erase while editing)
-                    Add(Id(n)); Add((int)n.type); Add((int)n.layer);
+                    Add(Id(n)); Add((int)n.type); Add((int)n.layer); Add(Id(n.model));
+                    Add(Mathf.RoundToInt(n.rotationDegrees * 1000f));
                     AddV(NodePosition(n)); AddV(n.chipSize); Add(n.name.GetHashCode());
                 }
                 foreach (var t in traces)
@@ -213,7 +265,7 @@ namespace Pcb
                 foreach (var d in decorations)
                 {
                     if (!d) continue;
-                    Add(Id(d)); Add((int)d.type); Add((int)d.layer);
+                    Add(Id(d)); Add((int)d.type); Add((int)d.layer); Add(Id(d.model));
                     AddV(WorldToLocal(d.transform.position)); Add(Mathf.RoundToInt(d.rotationDegrees * 1000f));
                 }
                 return h;

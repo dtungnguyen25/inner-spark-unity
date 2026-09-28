@@ -79,7 +79,7 @@ namespace Pcb
             }
 
             var mouse = Mouse.current;
-            if (mouse != null && mouse.leftButton.isPressed && GUIUtility.hotControl == 0)
+            if (mouse != null && mouse.leftButton.isPressed && GUIUtility.hotControl == 0 && !PauseMenu.GamePaused)
             {
                 inspect += mouse.delta.ReadValue() * inspectSensitivity;
                 inspect = Vector2.ClampMagnitude(inspect, inspectMaxAngle);

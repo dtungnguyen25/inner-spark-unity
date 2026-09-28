@@ -17,6 +17,8 @@ namespace Pcb
         InputAction pauseAction;
 
         public bool IsPaused => panel && panel.activeSelf;
+        /// <summary>For gameplay scripts without a PauseMenu reference (Spark, BoardRig): ignore input while true.</summary>
+        public static bool GamePaused { get; private set; }
 
         void Awake()
         {
@@ -27,7 +29,11 @@ namespace Pcb
 
         void OnEnable() => pauseAction.Enable();
         void OnDisable() => pauseAction.Disable();
-        void OnDestroy() => pauseAction.Dispose();
+        void OnDestroy()
+        {
+            pauseAction.Dispose();
+            GamePaused = false; // static: don't carry a stale pause into the next scene
+        }
 
         void Update()
         {
@@ -44,6 +50,7 @@ namespace Pcb
             if (panel) panel.SetActive(true);
             if (restartButton) restartButton.interactable = false;
             Time.timeScale = 0f;
+            GamePaused = true;
         }
 
         public void Resume()
@@ -51,11 +58,13 @@ namespace Pcb
             if (panel) panel.SetActive(false);
             if (restartButton) restartButton.interactable = true;
             Time.timeScale = 1f;
+            GamePaused = false;
         }
 
         public void QuitToMenu()
         {
             Time.timeScale = 1f;
+            GamePaused = false;
             SceneManager.LoadScene(mainMenuScene);
         }
 

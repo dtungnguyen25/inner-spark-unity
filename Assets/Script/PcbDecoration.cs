@@ -14,5 +14,7 @@ namespace Pcb
         public PcbLayer layer = PcbLayer.Front;
         [Tooltip("Spin around the board normal, in degrees.")]
         public float rotationDegrees = 0f;
+        [Tooltip("Optional: this decoration's own model (Level Editor > Paint). Empty = the theme's first model for this type.")]
+        public GameObject model;
     }
 }
