@@ -5,6 +5,25 @@ See [DESIGN.md](DESIGN.md) for the design reference / architecture map.
 
 ---
 
+## 2026-09-28 (later)
+
+**Changes made:**
+- **Bug fix — input leaking through the pause menu:** moves/flips pressed while paused were
+  registered and played the moment you unpaused. `PauseMenu` now exposes a static
+  `GamePaused`; `Spark.ReadInput` drops any queued move/flip while it's true (and keeps
+  tracking the held direction, so a key held through Resume doesn't fire either), and
+  `BoardRig` ignores mouse-drag inspection while paused. `LevelManager` already skipped
+  restart/confirm while paused.
+- `DESIGN.md` brought up to date: Controls table (Prev/Next removed, Esc = pause, Restart/Pause
+  buttons, dialog Continue), UI scripts + scenes added to the architecture map, corrected
+  `PcbDecoration.cs` location.
+- Logged the art import (commit `6f9039d`, `Assets/Import Asset/`: Sparky character, level props,
+  level scene FBX, portraits) — **imported but not tested yet**, nothing wired up to it.
+- Noted: a second dialog asset `Lvl2_Intro` exists alongside `Lvl1_Intro`.
+
+**To test:** pause mid-level, press directions / Space / drag the mouse, resume → spark
+should not move or flip until a fresh input after resuming.
+
 ## 2026-09-28
 
 **Session summary:** Full day building out the Main Menu / Stage Select / Pause / Dialog

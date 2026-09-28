@@ -124,14 +124,18 @@ namespace Pcb
 
         void ReadInput()
         {
-            if (flipAction.WasPressedThisFrame()) hasQueuedFlip = true;
+            // Paused: drop anything queued so nothing fires the moment play resumes.
+            bool paused = PauseMenu.GamePaused;
+            if (paused) hasQueuedMove = hasQueuedFlip = false;
+            else if (flipAction.WasPressedThisFrame()) hasQueuedFlip = true;
 
             Vector2 v = moveAction.ReadValue<Vector2>();
             if (v.sqrMagnitude < 0.25f) { lastSector = -1; return; }
             // Treat each new 8-way direction as a fresh press, so holding keys doesn't auto-repeat.
             int sector = Mathf.RoundToInt(Mathf.Atan2(v.y, v.x) / (Mathf.PI * 0.25f)) & 7;
             if (sector == lastSector) return;
-            lastSector = sector;
+            lastSector = sector; // still tracked while paused, so a key held through Resume doesn't count as a new press
+            if (paused) return;
             queuedMove = v.normalized;
             hasQueuedMove = true;
         }
