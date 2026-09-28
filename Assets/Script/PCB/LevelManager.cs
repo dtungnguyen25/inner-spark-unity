@@ -5,7 +5,7 @@ namespace Pcb
 {
     /// <summary>
     /// One per scene. Plays the levels from the LevelList: spawns the board and the spark,
-    /// detects the Goal, and handles restart / previous / next level plus a simple HUD.
+    /// detects the Goal, and handles restart plus a simple HUD.
     /// If a Board is already in the scene (the one you are editing), play starts on it.
     /// </summary>
     public class LevelManager : MonoBehaviour
@@ -15,8 +15,10 @@ namespace Pcb
         public int startLevel;
         [Tooltip("Optional. If empty, a default spark is created.")]
         public Spark sparkPrefab;
-        [Tooltip("Show the Prev / Restart / Next buttons (turn off for the final build if you want).")]
-        public bool showLevelButtons = true;
+        [Tooltip("Optional. Esc opens Resume / Quit to Menu / Quit App through this instead of quitting straight to desktop.")]
+        public PauseMenu pauseMenu;
+        [Tooltip("Optional. Shown before play if the current level has a DialogSequence assigned.")]
+        public DialogController dialogController;
 
         GameObject template; // what Restart re-creates: a level prefab, or the disabled scene board
         int index = -1;
@@ -25,7 +27,7 @@ namespace Pcb
         Spark spark;
         bool won;
         float wonAt;
-        InputAction restartAction, confirmAction, prevAction, nextAction, quitAction;
+        InputAction restartAction, confirmAction;
         GUIStyle hudStyle, bigStyle;
 
         public Board CurrentBoard => current;
@@ -34,9 +36,6 @@ namespace Pcb
         {
             restartAction = Button("<Keyboard>/r", "<Gamepad>/select");
             confirmAction = Button("<Keyboard>/space", "<Keyboard>/enter", "<Gamepad>/buttonSouth");
-            prevAction = Button("<Keyboard>/leftBracket", "<Keyboard>/pageUp", "<Gamepad>/leftShoulder");
-            nextAction = Button("<Keyboard>/rightBracket", "<Keyboard>/pageDown", "<Gamepad>/rightShoulder");
-            quitAction = Button("<Keyboard>/escape");
         }
 
         static InputAction Button(params string[] bindings)
@@ -46,26 +45,35 @@ namespace Pcb
             return action;
         }
 
-        void OnEnable() { restartAction.Enable(); confirmAction.Enable(); prevAction.Enable(); nextAction.Enable(); quitAction.Enable(); }
-        void OnDisable() { restartAction.Disable(); confirmAction.Disable(); prevAction.Disable(); nextAction.Disable(); quitAction.Disable(); }
-        void OnDestroy() { restartAction.Dispose(); confirmAction.Dispose(); prevAction.Dispose(); nextAction.Dispose(); quitAction.Dispose(); }
+        void OnEnable() { restartAction.Enable(); confirmAction.Enable(); }
+        void OnDisable() { restartAction.Disable(); confirmAction.Disable(); }
+        void OnDestroy() { restartAction.Dispose(); confirmAction.Dispose(); }
 
         void Start()
         {
             var sceneBoard = FindAnyObjectByType<Board>();
             bool levelsAvailable = levels && levels.Count > 0;
-            if (sceneBoard && (Application.isEditor || !levelsAvailable))
+
+            // Arrived via Main Menu / Stage Select: that choice always wins, even if a Board happens
+            // to be sitting in this scene for editing - otherwise testing through the menu in the
+            // Editor would silently ignore Stage Select and just play whatever's in the scene.
+            if (levelsAvailable && GameFlow.HasPendingRequest)
+            {
+                if (sceneBoard) sceneBoard.gameObject.SetActive(false);
+                GoTo(GameFlow.TakeRequestedLevel(startLevel));
+            }
+            else if (sceneBoard && (Application.isEditor || !levelsAvailable))
             {
                 // Editor: play the board being edited, keeping an untouched copy for restarts.
                 sceneBoard.gameObject.SetActive(false);
                 template = sceneBoard.gameObject;
                 index = levels ? levels.IndexOf(sceneBoard.levelName) : -1;
-                Spawn();
+                Spawn(showDialog: true);
             }
             else if (levelsAvailable)
             {
                 if (sceneBoard) sceneBoard.gameObject.SetActive(false); // builds always start from the Level List
-                GoTo(startLevel);
+                GoTo(GameFlow.TakeRequestedLevel(startLevel));
             }
             else Debug.LogError("[PCB] No Board in the scene and no levels in the Level List.", this);
         }
@@ -75,16 +83,16 @@ namespace Pcb
             if (!levels || levels.Count == 0) return;
             index = (levelIndex % levels.Count + levels.Count) % levels.Count;
             template = levels[index] ? levels[index].gameObject : null;
-            Spawn();
+            Spawn(showDialog: true);
         }
 
-        public void Next() => GoTo(index + 1);
-        public void Previous() => GoTo(index < 0 ? -1 : index - 1);
-        public void Restart() => Spawn();
+        public void Next() => GoTo(index + 1); // advances after a win; see OnArrived/Update
+        public void Restart() => Spawn(showDialog: false); // replaying a level you've already seen the intro for
 
-        void Spawn()
+        void Spawn(bool showDialog)
         {
             if (!template) { Debug.LogError($"[PCB] Level {index + 1} is missing from the Level List.", this); return; }
+            if (spark) spark.Arrived -= OnArrived;
             if (rig) Destroy(rig.gameObject); // takes the board and the spark with it
             won = false;
 
@@ -106,6 +114,12 @@ namespace Pcb
             spark = sparkPrefab ? Instantiate(sparkPrefab) : new GameObject("Spark").AddComponent<Spark>();
             spark.Init(current, start, rig);
             spark.Arrived += OnArrived;
+
+            if (showDialog && current.dialogSequence && dialogController)
+            {
+                spark.enabled = false;
+                dialogController.Show(current.dialogSequence, () => { if (spark) spark.enabled = true; });
+            }
         }
 
         void OnArrived(PcbNode node)
@@ -118,16 +132,18 @@ namespace Pcb
 
         void Update()
         {
-            if (quitAction.WasPressedThisFrame() && !Application.isEditor) Application.Quit(); // no effect in WebGL
+            if (pauseMenu && pauseMenu.IsPaused) return;
+            if (dialogController && dialogController.IsShowing) return;
+
             if (restartAction.WasPressedThisFrame()) Restart();
-            else if (prevAction.WasPressedThisFrame()) Previous();
-            else if (nextAction.WasPressedThisFrame()) Next();
             else if (won && Time.time - wonAt > 0.4f && confirmAction.WasPressedThisFrame()) Next();
         }
 
         void OnGUI()
         {
             if (!current) return;
+            if (pauseMenu && pauseMenu.IsPaused) return;
+            if (dialogController && dialogController.IsShowing) return;
             if (hudStyle == null)
             {
                 hudStyle = new GUIStyle(GUI.skin.label) { richText = true };
@@ -140,19 +156,10 @@ namespace Pcb
             string number = index >= 0 && levels ? $"{index + 1}/{levels.Count}" : "unsaved";
             string side = current.View == PcbLayer.Front ? "FRONT" : "<color=#7fd4ff>BACK</color>";
             string hud = $"<b>{current.levelName}</b>  ({number})\nSide: <b>{side}</b>\n" +
-                         $"<size={font * 3 / 4}>Move: WASD / Arrows   Flip (on via): Space   Inspect: drag mouse   Restart: R   Level: [ ]</size>";
+                         $"<size={font * 3 / 4}>Move: WASD / Arrows   Flip (on via): Space   Inspect: drag mouse   Restart: R</size>";
             if (spark && !won && !spark.IsMoving && !spark.IsTurning && spark.CurrentNode && spark.CurrentNode.IsVia)
                 hud += "\n<color=#ffe08a>On a via: press Space to flip side</color>";
             GUI.Label(new Rect(16, 12, Screen.width - 32, Screen.height * 0.3f), hud, hudStyle);
-
-            if (showLevelButtons)
-            {
-                float w = font * 5f, h = font * 2f, y = 12f, x = Screen.width - 16f - w * 3f - 8f;
-                var buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = font };
-                if (GUI.Button(new Rect(x, y, w, h), "◀ Prev", buttonStyle)) Previous();
-                if (GUI.Button(new Rect(x + w + 4f, y, w, h), "Restart", buttonStyle)) Restart();
-                if (GUI.Button(new Rect(x + (w + 4f) * 2f, y, w, h), "Next ▶", buttonStyle)) Next();
-            }
 
             if (won)
                 GUI.Label(new Rect(0, 0, Screen.width, Screen.height),

@@ -97,6 +97,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Pcb.Board
   levelName: Level 1
   theme: {fileID: 11400000, guid: ffa1e0a639d45c241bbe1bad221dd486, type: 2}
+  dialogSequence: {fileID: 11400000, guid: 7a16016d75d7bcf4b8a88cbada05dedb, type: 2}
   cellSize: 0.5
   sizeInCells: {x: 5, y: 7}
   inputTolerance: 0.5

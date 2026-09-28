@@ -42,14 +42,20 @@ namespace Pcb
             var path = new List<Vector2>();
             foreach (var trace in board.Traces)
             {
-                if (!trace.IsValid) continue;
+                if (!trace || !trace.IsValid) continue;
                 trace.GetPath(board, false, path);
                 BuildTrace(root, trace, path, theme, trace.layer == PcbLayer.Front ? front : back);
             }
             foreach (var node in board.Nodes)
+            {
+                if (!node) continue; // can go missing mid-rebuild (deleted via Undo/Erase while editing)
                 BuildNode(root, board, node, theme, node.IsVia ? both : node.layer == PcbLayer.Front ? front : back);
+            }
             foreach (var decor in board.Decorations)
+            {
+                if (!decor) continue;
                 BuildDecoration(root, board, decor, theme, decor.layer == PcbLayer.Front ? front : back);
+            }
 
             foreach (var tr in root.GetComponentsInChildren<Transform>(true))
             {
