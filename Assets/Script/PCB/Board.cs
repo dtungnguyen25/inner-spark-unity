@@ -19,13 +19,14 @@ namespace Pcb
             public GameObject trace;
             public GameObject traceBend;
             [Tooltip("Default model for every node of that type on this level (a node's own Model still wins).")]
-            public GameObject capacitor, via, start, goal;
+            public GameObject capacitor, via, start, goal, switchNode;
 
             public GameObject For(NodeType type) => type switch
             {
                 NodeType.Capacitor => capacitor,
                 NodeType.Via => via,
                 NodeType.Start => start,
+                NodeType.Switch => switchNode,
                 _ => goal
             };
 
@@ -36,6 +37,7 @@ namespace Pcb
                     case NodeType.Capacitor: capacitor = model; break;
                     case NodeType.Via: via = model; break;
                     case NodeType.Start: start = model; break;
+                    case NodeType.Switch: switchNode = model; break;
                     default: goal = model; break;
                 }
             }
@@ -247,7 +249,7 @@ namespace Pcb
                 if (!Application.isPlaying) Add(JsonUtility.ToJson(theme).GetHashCode()); // live theme tweaks while editing
                 Add(sizeInCells.x); Add(sizeInCells.y); Add(Mathf.RoundToInt(cellSize * 1000f));
                 Add(Id(look.boardTile)); Add(Id(look.trace)); Add(Id(look.traceBend));
-                Add(Id(look.capacitor)); Add(Id(look.via)); Add(Id(look.start)); Add(Id(look.goal));
+                Add(Id(look.capacitor)); Add(Id(look.via)); Add(Id(look.start)); Add(Id(look.goal)); Add(Id(look.switchNode));
                 foreach (var n in nodes)
                 {
                     if (!n) continue; // can go missing mid-rebuild (deleted via Undo/Erase while editing)

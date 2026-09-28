@@ -26,6 +26,7 @@ namespace Pcb
         public GameObject viaPrefab;
         public GameObject startPrefab;
         public GameObject goalPrefab;
+        public GameObject switchPrefab;
         [Tooltip("One repeatable board tile, thickness along Z. Resized to fill boardTileSize x boardTileSize x boardThickness and repeated across the whole board.")]
         public GameObject boardTilePrefab;
         [Tooltip("One straight piece of trace, length along X, height along Z. Stretched to each segment's length x traceWidth x traceHeight.")]
@@ -48,6 +49,7 @@ namespace Pcb
         public GameObject[] viaVariants;
         public GameObject[] startVariants;
         public GameObject[] goalVariants;
+        public GameObject[] switchVariants;
         public GameObject[] boardTileVariants;
         public GameObject[] traceVariants;
         public GameObject[] traceBendVariants;
@@ -75,6 +77,7 @@ namespace Pcb
             NodeType.Capacitor => capacitorPrefab,
             NodeType.Via => viaPrefab,
             NodeType.Start => startPrefab,
+            NodeType.Switch => switchPrefab,
             _ => goalPrefab
         };
 
@@ -83,6 +86,7 @@ namespace Pcb
             NodeType.Capacitor => capacitorVariants,
             NodeType.Via => viaVariants,
             NodeType.Start => startVariants,
+            NodeType.Switch => switchVariants,
             _ => goalVariants
         };
 
