@@ -10,6 +10,8 @@ namespace Pcb
         public PcbLayer layer = PcbLayer.Front;
         [Tooltip("Goal only: chip size in world units.")]
         public Vector2 chipSize = new Vector2(1f, 1.5f);
+        [Tooltip("Optional: this node's own model (Level Editor > Paint). Empty = the level's default for this type (Board > Look), then the theme's.")]
+        public GameObject model;
 
         public bool IsVia => type == NodeType.Via;
         public bool IsOnLayer(PcbLayer l) => IsVia || layer == l;

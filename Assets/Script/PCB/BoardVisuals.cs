@@ -36,15 +36,30 @@ namespace Pcb
             float t = theme.boardThickness;
             Vector2 size = board.Size;
             var slab = Group(root, "Board", Vector3.zero, board);
-            Part(slab, Cube, new Vector3(size.x * 0.5f, size.y * 0.5f, t * 0.5f), Quaternion.identity,
-                new Vector3(size.x + theme.boardMargin * 2f, size.y + theme.boardMargin * 2f, t), theme.boardMaterial, both);
+            Vector2 area = size + Vector2.one * theme.boardMargin * 2f;
+            var tile = board.BoardTileModel;
+            if (tile)
+            {
+                // Repeat the tile over the board; round to a whole number of tiles and resize them to fit exactly.
+                int nx = Mathf.Max(1, Mathf.RoundToInt(area.x / theme.boardTileSize));
+                int ny = Mathf.Max(1, Mathf.RoundToInt(area.y / theme.boardTileSize));
+                var cell = new Vector2(area.x / nx, area.y / ny);
+                for (int x = 0; x < nx; x++)
+                for (int y = 0; y < ny; y++)
+                {
+                    var center = new Vector3(-theme.boardMargin + cell.x * (x + 0.5f), -theme.boardMargin + cell.y * (y + 0.5f), t * 0.5f);
+                    Fit(slab, tile, center, Quaternion.identity, new Vector3(cell.x, cell.y, t), both);
+                }
+            }
+            else Part(slab, Cube, new Vector3(size.x * 0.5f, size.y * 0.5f, t * 0.5f), Quaternion.identity,
+                new Vector3(area.x, area.y, t), theme.boardMaterial, both);
 
             var path = new List<Vector2>();
             foreach (var trace in board.Traces)
             {
                 if (!trace || !trace.IsValid) continue;
                 trace.GetPath(board, false, path);
-                BuildTrace(root, trace, path, theme, trace.layer == PcbLayer.Front ? front : back);
+                BuildTrace(root, board, trace, path, theme, trace.layer == PcbLayer.Front ? front : back);
             }
             foreach (var node in board.Nodes)
             {
@@ -65,11 +80,32 @@ namespace Pcb
             return root;
         }
 
-        static void BuildTrace(Transform root, Trace trace, List<Vector2> path, PcbTheme theme, List<Renderer> list)
+        static void BuildTrace(Transform root, Board board, Trace trace, List<Vector2> path, PcbTheme theme, List<Renderer> list)
         {
             var g = Group(root, trace.name, Vector3.zero, trace);
             float w = theme.traceWidth, h = theme.traceHeight;
             float z = Surface(trace.layer, theme.boardThickness) + Out(trace.layer) * h * 0.5f;
+            GameObject piece = board.TraceModel, bend = board.TraceBendModel;
+            if (piece)
+            {
+                // Back side: turn pieces over so their top faces away from the board there too.
+                var flip = trace.layer == PcbLayer.Back ? Quaternion.Euler(180f, 0f, 0f) : Quaternion.identity;
+                // Without a bend piece, straight pieces run half a width past each bend so corners have no gaps.
+                float overlap = bend ? 0f : w * 0.5f;
+                for (int i = 0; i < path.Count - 1; i++)
+                {
+                    Vector2 a = path[i], b = path[i + 1], d = b - a, dir = d.normalized;
+                    float before = i > 0 ? overlap : 0f, after = i < path.Count - 2 ? overlap : 0f;
+                    Vector2 mid = (a + b) * 0.5f + dir * ((after - before) * 0.5f);
+                    var rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg) * flip;
+                    Fit(g, piece, new Vector3(mid.x, mid.y, z), rotation,
+                        new Vector3(d.magnitude + before + after, w, h), list);
+
+                    if (bend && i < path.Count - 2) // bend at the end of this segment
+                        Fit(g, bend, new Vector3(b.x, b.y, z), rotation, new Vector3(w, w, h), list);
+                }
+                return;
+            }
             for (int i = 0; i < path.Count; i++)
             {
                 // Round joint at every point, flat strip for every segment.
@@ -90,13 +126,7 @@ namespace Pcb
             float o = Out(side);
             var g = Group(root, node.name, new Vector3(p.x, p.y, node.IsVia ? 0f : Surface(side, t)), node);
 
-            GameObject model = node.type switch
-            {
-                NodeType.Capacitor => theme.capacitorPrefab,
-                NodeType.Via => theme.viaPrefab,
-                NodeType.Start => theme.startPrefab,
-                _ => theme.goalPrefab
-            };
+            var model = board.NodeModel(node);
             if (model)
             {
                 var m = Object.Instantiate(model, g, false);
@@ -167,7 +197,7 @@ namespace Pcb
             var rotation = Quaternion.Euler(0f, 0f, decor.rotationDegrees) *
                 (decor.layer == PcbLayer.Back ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity);
 
-            var model = theme.GetDecorationPrefab(decor.type);
+            var model = board.DecorationModel(decor);
             if (model)
             {
                 var m = Object.Instantiate(model, g, false);
@@ -189,6 +219,46 @@ namespace Pcb
             go.transform.localPosition = localPosition;
             go.AddComponent<PcbVisualOwner>().owner = owner;
             return go.transform;
+        }
+
+        /// <summary>
+        /// Places a model so its mesh bounds exactly fill a box of 'size' centred on 'center', whatever size it was authored at.
+        /// Keeps the theme's numbers (trace height, board thickness...) the single source of truth for gameplay.
+        /// </summary>
+        static void Fit(Transform parent, GameObject model, Vector3 center, Quaternion rotation, Vector3 size, List<Renderer> list)
+        {
+            var pivot = new GameObject(model.name).transform;
+            pivot.SetParent(parent, false);
+            pivot.SetLocalPositionAndRotation(center, rotation);
+            var m = Object.Instantiate(model, pivot, false).transform;
+
+            bool any = false;
+            var bounds = new Bounds();
+            void Encapsulate(Transform owner, Mesh mesh)
+            {
+                if (!mesh) return;
+                Vector3 c = mesh.bounds.center, e = mesh.bounds.extents;
+                for (int i = 0; i < 8; i++)
+                {
+                    var corner = c + Vector3.Scale(e, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                    var p = pivot.InverseTransformPoint(owner.TransformPoint(corner));
+                    if (any) bounds.Encapsulate(p); else { bounds = new Bounds(p, Vector3.zero); any = true; }
+                }
+            }
+            foreach (var mf in m.GetComponentsInChildren<MeshFilter>(true)) Encapsulate(mf.transform, mf.sharedMesh);
+            foreach (var sm in m.GetComponentsInChildren<SkinnedMeshRenderer>(true)) Encapsulate(sm.transform, sm.sharedMesh);
+
+            if (any)
+            {
+                m.localPosition -= bounds.center;
+                Vector3 b = bounds.size;
+                // A perfectly flat axis (e.g. a plane) can't be stretched; leave it as is.
+                pivot.localScale = new Vector3(
+                    b.x > 1e-4f ? size.x / b.x : 1f,
+                    b.y > 1e-4f ? size.y / b.y : 1f,
+                    b.z > 1e-4f ? size.z / b.z : 1f);
+            }
+            list?.AddRange(m.GetComponentsInChildren<Renderer>(true));
         }
 
         public static MeshRenderer Part(Transform parent, Mesh mesh, Vector3 localPosition, Quaternion localRotation,

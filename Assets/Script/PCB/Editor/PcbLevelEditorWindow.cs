@@ -8,11 +8,11 @@ using UnityEngine;
 /// </summary>
 public partial class PcbLevelEditorWindow : EditorWindow
 {
-    enum Tool { Select, Node, Trace, Erase, Decoration }
+    enum Tool { Select, Node, Trace, Erase, Decoration, Paint }
 
     struct Issue { public string message; public Object target; }
 
-    static readonly string[] ToolNames = { "Select", "Node", "Trace", "Erase", "Decor" };
+    static readonly string[] ToolNames = { "Select", "Node", "Trace", "Erase", "Decor", "Paint" };
     static readonly string[] SideNames = { "Front", "Back" };
     static readonly Color FrontColor = new Color(1f, 0.85f, 0.4f);
     static readonly Color BackColor = new Color(0.5f, 0.85f, 1f);
@@ -66,7 +66,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
         scroll = EditorGUILayout.BeginScrollView(scroll);
         if (EditorApplication.isPlaying)
         {
-            EditorGUILayout.HelpBox("Play mode: use the Prev / Restart / Next buttons in the Game view ( [ and ] keys ).\nEdits made now are lost when you stop playing.", MessageType.Info);
+            EditorGUILayout.HelpBox("Play mode: R restarts, Esc pauses.\nEdits made now are lost when you stop playing.", MessageType.Info);
             EditorGUILayout.EndScrollView();
             return;
         }
@@ -105,6 +105,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
             board.sizeInCells = Vector2Int.Max(size, Vector2Int.one);
             board.cellSize = Mathf.Max(0.1f, cell);
         }
+        LookGUI();
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Editing Side", EditorStyles.boldLabel);
@@ -127,6 +128,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
             decorType = (DecorType)EditorGUILayout.EnumPopup("Decor Type", decorType);
             decorRotation = EditorGUILayout.Slider("Rotation", decorRotation, 0f, 360f);
         }
+        if (tool == Tool.Paint) PaintOptionsGUI();
         EditorGUILayout.HelpBox(HelpText(), MessageType.None);
 
         EditorGUILayout.Space();
@@ -169,6 +171,9 @@ public partial class PcbLevelEditorWindow : EditorWindow
             case Tool.Decoration:
                 return "Click empty grid: place a decoration on the current side.\n" +
                        "Drag a decoration: move it.   Ctrl+Click: change its type/rotation.";
+            case Tool.Paint:
+                return "Pick a type and a model below, then click nodes/decorations of that type to paint them.\n" +
+                       "Shift+Click: reset to the default.   Level-wide defaults: Look section above.";
             default:
                 return "Normal Unity selection. Select nodes/traces to edit them in the Inspector.";
         }
@@ -241,6 +246,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
             case Tool.Trace: TraceTool(e, mouse, snapped); break;
             case Tool.Erase: EraseTool(e, mouse); break;
             case Tool.Decoration: DecorationTool(e, id, mouse, snapped); break;
+            case Tool.Paint: PaintTool(e, mouse); break;
         }
 
         if (e.type == EventType.MouseMove || e.type == EventType.MouseDrag) sceneView.Repaint();
@@ -323,6 +329,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
                 if (hit && e.control)
                 {
                     Undo.RecordObject(hit, "Change Node Type");
+                    if (hit.type != placeType) hit.model = null; // a painted model belongs to the old type
                     hit.type = placeType;
                     hit.name = NodeName(placeType);
                 }
@@ -548,6 +555,7 @@ public partial class PcbLevelEditorWindow : EditorWindow
                 if (hit && e.control)
                 {
                     Undo.RecordObject(hit, "Change Decoration Type");
+                    if (hit.type != decorType) hit.model = null; // a painted model belongs to the old type
                     hit.type = decorType;
                     hit.rotationDegrees = decorRotation;
                     hit.name = DecorationName(decorType);
