@@ -5,6 +5,66 @@ See [DESIGN.md](DESIGN.md) for the design reference / architecture map.
 
 ---
 
+## 2026-09-29 (night) — checking a merge: two real bugs found and fixed
+
+**Session summary:** Designer merged in a batch of the dev's parallel work (8-way movement,
+another via/visual fix pass, `Level 05`, more materials — full list below) and asked me to
+check it over. The merge had real conflicts (`BoardVisuals.cs`, `GateMechanic.cs`,
+`PcbTheme.cs`, `LevelList.asset`, `Level 04.prefab`) resolved by hand; two of those
+resolutions left the code in a genuinely broken/regressed state. No leftover `<<<<<<<`
+conflict markers anywhere, for what that's worth — these were clean-looking but logically
+wrong resolutions, not obvious ones.
+
+**Bugs found and fixed:**
+1. **Via model: front side broke while fixing the back side.** My fix from earlier today
+   (re-center the model at the board's mid-thickness) and the dev's independent fix (a
+   *second*, mirrored copy of the model — one instance per face, which is the more robust
+   general solution) both survived the merge, in an order that made them incompatible: the
+   dev's math assumes the first copy sits at its own authored position (the front face,
+   `z = 0`); my fix had already shifted that same first copy to the midpoint before their
+   code ran, so the "front" copy ended up buried in the middle of the board instead of on
+   the front face. Fix: removed my midpoint-shift now that the dev's two-copy approach
+   supersedes it — `BoardVisuals.BuildNode` no longer touches a via model's position beyond
+   what the dev's mirroring already does.
+2. **`GateMechanic.cs` conflict resolution silently discarded finished work.** The dev's
+   "visual stop braking" commit rewrote `Start()` to (a) use `board.theme.gatePrefab` for
+   the closed-gate visual when one's assigned, and (b) position/orient that visual properly
+   via `board.NodePosition`/`board.SurfaceToWorld` (trace midpoint, correct surface height,
+   rotated to the trace direction, flipped on the back) instead of the old crude
+   world-space `Vector3.Lerp` + hardcoded offset. The merge's conflict resolution reverted
+   `Start()` back to the old crude version entirely — losing both improvements. Confirmed
+   this wasn't an abandoned experiment: `PcbTheme.asset`'s `gatePrefab` is already assigned
+   (to `Trace_Path_Blocked`, presumably), so every Gate has been silently falling back to
+   the auto-generated red placeholder cube instead of that real art. Restored the full
+   `Start()` from the dev's commit — untouched otherwise, `AndGateMechanic` (which doesn't
+   override `Start()`) picks up the same fix automatically.
+
+**Worth testing, not touched:** the dev's "8-way movement" change (`Spark.ReadInput`) adds
+an 80ms grace timer that delays committing a queued move, letting quick diagonal key-rolls
+(e.g. tap W then D) combine into one diagonal input instead of firing the cardinal move
+first. One edge case I couldn't verify without playtesting: if the player releases input
+*during* that 80ms window, the timer still counts down and still fires the move at the end
+using the last direction held — so a very brief tap-and-release might still move the Spark
+up to ~80ms later. Might be intended leniency, might not — worth a deliberate tap-then-
+release test.
+
+**Also landed in this merge, no issues found:**
+- `Board.Rebuild()` now filters out `HideFlags.DontSave` objects when collecting
+  nodes/traces/decorations (defensive, excludes generated visuals) — reasonable, unrelated
+  to anything above.
+- `LevelManager.Start()` now finds and deactivates *every* Board in the scene (not just
+  one) before deciding what to play — merged cleanly, no conflict, looks correct.
+- New content: `Level 05.prefab`, updates to `Level 02`/`Level 03`/`Level 1`/`Level 04`,
+  `Trace_Path_Blocked.prefab` (the real Gate visual — now actually wired up per fix #2
+  above), `Red.mat`/`White.mat`.
+- `PcbTheme.cs` gained `gatePrefab`/`gateVariants` (now actually used, see fix #2).
+
+### Not done yet / pending
+- Playtest the 80ms input-grace-timer edge case above.
+- Confirm in Unity: via visible on both sides again (front *and* back, not just back), Gate
+  visuals now use `Trace_Path_Blocked` / position correctly on the trace midpoint.
+- Everything under "Not done yet" in earlier entries below is still open.
+
 ## 2026-09-29 (evening) — multi-switch AND gate
 
 **Changes made:**

@@ -139,9 +139,6 @@ namespace Pcb
             if (model)
             {
                 var m = Object.Instantiate(model, g, false);
-                // Vias sit through the board thickness (the group is placed at the front face, z = 0),
-                // not on one face like other node models - shift to the midpoint so it reaches both sides.
-                if (node.IsVia) m.transform.localPosition += new Vector3(0f, 0f, t * 0.5f);
                 m.transform.localRotation = side == PcbLayer.Back ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
                 list.AddRange(m.GetComponentsInChildren<Renderer>(true));
 
