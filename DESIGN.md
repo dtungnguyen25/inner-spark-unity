@@ -56,7 +56,7 @@ blocked while a dialog is showing.
 |---|---|
 | **Board** | Root of a level. Owns all nodes/traces/decorations, builds the movement graph and the generated 3D look. |
 | **Node** (`PcbNode`) | A point the Spark can stop at. |
-| **NodeType** | `Capacitor` (plain stop), `Via` (stop that exists on both sides — flip point), `Start` (spawn), `Goal` (level end). |
+| **NodeType** | `Capacitor` (plain stop), `Via` (stop that exists on both sides — flip point), `Start` (spawn), `Goal` (level end), `Switch` (toggle point — see `SwitchMechanic` below). |
 | **Trace** | A copper line between two nodes on one side of the board; the Spark slides along it automatically once entered. Can have bend points. |
 | **Layer** | `Front` / `Back` — which face of the board something is on. Vias belong to both. |
 | **Spark** | The player-controlled glowing sphere. |
@@ -78,7 +78,12 @@ Runtime (`Assets/Script/PCB/`):
 - **LevelList.cs** — ordered `ScriptableObject` list of level prefabs (the "play order").
 - **PcbTheme.cs** — ScriptableObject: materials, default model slots (nodes, decorations, board tile, trace, trace bend), a **Catalog** of variant models offered by the Level Editor, and every tunable size/color.
 - **PcbTypes.cs** — the core enums (`PcbLayer`, `NodeType`, `DecorType`).
-- **PcbMechanics.cs** — 🟡 **scaffolding only, currently unused.** Defines `TraceMechanic` (`CanEnter` / `OnTraversed`) and `NodeMechanic` (`OnSparkArrive` / `OnSparkLeave`) base classes meant for gameplay modifiers (resistor blocking one direction, a switch, a key pickup, a locked door...). No concrete subclass exists yet — this is the intended extension point for adding puzzle mechanics beyond plain routing + flipping.
+- **PcbMechanics.cs** — defines `TraceMechanic` (`CanEnter` / `OnTraversed`) and `NodeMechanic` (`OnSparkArrive` / `OnSparkLeave`) base classes for gameplay modifiers beyond plain routing + flipping. First concrete pair added 2026-09-28 (`feat/switch`, merged 2026-09-29):
+  - **SwitchMechanic.cs** (`NodeMechanic`, put on a `Switch` node) — `Toggle()` flips `isOn` and fires a `UnityEvent<bool> onToggle`. Triggered from `Spark.TryFlip()`: pressing the flip input on a `Switch` node calls `Toggle()` instead of the normal via-flip.
+  - **GateMechanic.cs** (`TraceMechanic`, put on a `Trace`) — `CanEnter` blocks the Spark unless `isOpen`; `SetOpen(bool)` is the usual `onToggle` target. Auto-generates a red placeholder cube at the trace midpoint if no `closedVisual` is assigned.
+  - Wired example: in `Level 04`, a Switch node's `onToggle` calls a Gate's `SetOpen` — a working switch-opens-gate puzzle piece. This single-switch-per-gate pattern (wire `onToggle` → `SetOpen` by hand in the Inspector) is still the way to do it when only one switch controls a gate.
+  - 🟡 Worth a look: both scripts still have `Debug.Log` calls left in from development, and `GateMechanic.CanEnter` ignores the `reversed` parameter (blocks the trace from both directions, may or may not be intended).
+  - **AndGateMechanic.cs** (added 2026-09-29, subclasses `GateMechanic`) — for the "several switches must *all* be on" case. Doesn't touch `GateMechanic`/`SwitchMechanic` at all; just assign a list of `SwitchMechanic`s in its `switches` field and it self-subscribes to each one's `onToggle` (no manual per-switch event wiring needed, unlike the single-switch case) and calls the inherited `SetOpen` whenever every switch in the list is on. Inherits the placeholder-visual behavior from `GateMechanic` unchanged.
 - **PcbVisualOwner.cs** — tags generated 3D parts with the source node/trace/decoration so scene clicks select the real object.
 
 Editor tooling (`Assets/Script/PCB/Editor/`):
@@ -112,7 +117,7 @@ Scenes: `MainMenu` (build index 0) → `SampleScene` (gameplay, build index 1).
 Fill these in as they get decided — flagging them so future sessions don't have to
 reverse-engineer intent from code again:
 
-- [ ] What gameplay mechanics should `TraceMechanic`/`NodeMechanic` actually cover first? (blocking traces, one-way traces, switches/keys, timed elements, etc.)
+- [x] What gameplay mechanics should `TraceMechanic`/`NodeMechanic` actually cover first? First one landed 2026-09-28: a `Switch` node toggling a `Gate` trace (see § 4). Still open: what comes after this — one-way traces, keys/pickups, timed elements?
 - [ ] Target scope: how many levels, roughly what difficulty/length arc?
 - [ ] Any progression/meta layer (level select screen, unlocks) beyond the built-in Prev/Restart/Next HUD?
 - [ ] Target platform(s) and any performance constraints that should shape `BoardVisuals`' generated-geometry approach.
@@ -122,4 +127,8 @@ reverse-engineer intent from code again:
   textures; `LevelProps`: capacitors, LEDs, switches ON/OFF, start/end plug nodes, PCB board modules,
   path module; a level scene FBX; portrait icons) but **not tested yet** and not wired into anything —
   likely destination is `PcbTheme`'s optional model slots (`capacitorPrefab`, `viaPrefab`,
-  `startPrefab`, `goalPrefab`, `decorationPrefabs`).
+  `startPrefab`, `goalPrefab`, `decorationPrefabs`) or the newer Catalog/Look system (§ 5).
+  A second art drop (2026-09-29, "Andrii") added a large batch of ready-to-use pieces on top:
+  per-color materials for LEDs/PCB boards/nodes, more `PlugNode` size variants, Sparky's own
+  materials + textures, and three VFX prefabs (`VFX_BurstOfSparks`, `VFX_Sparky_Idle`,
+  `VFX_Sparky_Trail`) — presumably for the Spark's idle/movement feel. Also not wired in yet.

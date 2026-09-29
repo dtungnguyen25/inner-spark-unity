@@ -5,6 +5,94 @@ See [DESIGN.md](DESIGN.md) for the design reference / architecture map.
 
 ---
 
+## 2026-09-29 (evening) — multi-switch AND gate
+
+**Changes made:**
+- **New: `AndGateMechanic.cs`** (`Assets/Script/PCB/`, subclasses `GateMechanic`) — for gates that
+  need *several* switches all on before they open, not just one. Existing `GateMechanic`/
+  `SwitchMechanic` are completely untouched, so every already-wired single-switch gate (e.g.
+  `Level 04`'s) keeps working exactly as before.
+  - Why a new class instead of extending `GateMechanic`: single-switch gates are driven by the
+    switch calling `SetOpen(bool)` directly (an unconditional "set to this state," no combining
+    logic) — wiring *two* switches to the same `SetOpen` the same way would just mean "whichever
+    was pressed last wins," not "both must be on." `AndGateMechanic` instead holds its own list of
+    `SwitchMechanic`s, subscribes to each one's `onToggle` itself in `OnEnable`, and only calls the
+    inherited `SetOpen(true)` once every switch in the list is on.
+  - Setup is simpler than the single-switch case too: assign the switches to the `Switches` list on
+    the gate and you're done — no per-switch Inspector event wiring needed, the gate does the
+    subscribing itself.
+  - Inherits `GateMechanic`'s placeholder-visual behavior (`closedVisual`, auto red cube if unset)
+    unchanged; the designer already has real art for both the single- and multi-switch cases to
+    swap in.
+
+### Not done yet / pending
+- Not tested in Unity yet — needs a scene with 2+ switches wired to one `AndGateMechanic` to confirm.
+- Assumed "must ALL be on" (AND) reading of the request; flag if OR ("any one opens it") was
+  actually wanted instead — that'd be a different (smaller) change.
+
+## 2026-09-29 (later) — scrollable Stage Select, Via model bug
+
+**Changes made:**
+- **Bug fix — Via node invisible from the back when a custom model is assigned.**
+  `theme.viaPrefab` (now `Via Demo.prefab`, a thin disc) is placed at the board's *front*
+  surface (`z = 0`) like every other node model, but a Via is meant to sit **through** the
+  board and poke out both faces — the old built-in procedural via shape did that correctly
+  by offsetting itself to the board's mid-thickness internally, but that offset was never
+  applied to the model-override path, so the disc sat almost entirely on the front and
+  never reached the back surface. Fixed in `BoardVisuals.BuildNode`: the instantiated model
+  is now shifted `+t * 0.5f` on its local Z when the node `IsVia`, matching where the
+  built-in shape already centers itself. Code-only, no scene changes needed.
+- **Stage Select list is now scrollable** (designer, manual Editor setup): existing
+  `ButtonContainer` re-parented into a `Scroll View > Viewport`, given a `Content Size
+  Fitter` (Vertical = Preferred Size) so it grows with the level count, `Scroll Rect`
+  wired to it, vertical-only. No code involved — `StageSelectController` just adds
+  buttons as children of `ButtonContainer` regardless of what wraps it.
+
+### Not done yet / pending
+- Confirm in Unity that the via now renders correctly on both sides after the fix above.
+- Switch mechanic: designer asked about placing a `Switch` node from the Level Editor —
+  see the next entry / DESIGN.md for what's possible today vs. what still needs the dev.
+
+## 2026-09-29 — catching up on teammates' work
+
+**Session summary:** Designer asked me to check what changed since the last logged entry.
+Read through git history (nothing here was written by me) and updated DESIGN.md to match;
+no code changes this entry, just documentation catching up to what's already in `main`.
+
+### What landed (via `git log`, not seen in PROGRESS.md before now)
+- **First concrete gameplay mechanic — Switch/Gate** (Truong Quang Nghia, branch `feat/switch`,
+  merged into `main` today): new `NodeType.Switch`, `SwitchMechanic.cs` (`NodeMechanic` —
+  `Toggle()` fires `UnityEvent<bool> onToggle`), `GateMechanic.cs` (`TraceMechanic` — blocks
+  entry unless `isOpen`, `SetOpen(bool)`). `Spark.TryFlip()` now special-cases `Switch` nodes:
+  the flip input calls `Toggle()` instead of turning the board over. `Board`/`PcbTheme`/
+  `BoardVisuals` extended with a `switchNode`/`switchPrefab`/`switchVariants` slot (placeholder
+  shape: a metal cylinder with a disc on top, like a squat capacitor). **This is the first thing
+  to ever come out of the `TraceMechanic`/`NodeMechanic` extension points** — see DESIGN.md § 4.
+  - Wired and working in `Level 04`: a Switch's `onToggle` → a Gate's `SetOpen`.
+  - `Level 04` itself was heavily rebuilt alongside this (32×20 → 10×10, ~2450 lines of old
+    node/trace/decoration data removed) — reads like it became a small test bed for the
+    mechanic rather than a finished level; worth confirming with the dev before treating it
+    as a real level 4 again.
+  - Rough edges worth a look, not fixed: leftover `Debug.Log` calls in both scripts;
+    `GateMechanic.CanEnter` ignores the `reversed` parameter (blocks both directions —
+    may or may not be intended); `GateMechanic` auto-spawns a plain red cube if no
+    `closedVisual` is assigned (fine as a placeholder, just flagging it's not final art).
+- **Large art/VFX asset drop** ("Andrii", `andrii.nhuien@gameloft.com`, commit `5a8ba4f`,
+  191 files, art-only — no `.cs` changes): per-color materials for LEDs, PCB boards and
+  nodes; more `PlugNode` size variants (2/3/4); Sparky's own materials + textures; three
+  VFX prefabs — `VFX_BurstOfSparks`, `VFX_Sparky_Idle`, `VFX_Sparky_Trail` (likely meant for
+  the Spark's idle/movement feel, given the names). **Imported but not wired into anything
+  yet** — same status as the first art batch from two days ago.
+- Both branches merged into `main` by the designer just now (merge commit `0aeb810`); no
+  conflicts.
+
+### Not done yet / pending
+- Everything under "Not done yet" in the two entries below is still open (Switch/Gate is
+  new since then, doesn't change that list).
+- Nothing from either art drop is wired into `PcbTheme` / the Look-Catalog system yet.
+- Worth deciding whether `Level 04`'s rebuild is meant to become the real level 4, or if the
+  switch/gate testing should move to its own scratch level.
+
 ## 2026-09-28 (evening) — art investigation + model slots & per-level look system
 
 **Session summary:** Checked the imported art, then built a way to use it: model slots for the
