@@ -26,6 +26,8 @@ MonoBehaviour:
   viaPrefab: {fileID: 5081282958106826189, guid: f7416e6b361b4824f9125cb2e87643c8, type: 3}
   startPrefab: {fileID: 1509393273787007909, guid: ed766568b150b3f478867ac7c81db4a4, type: 3}
   goalPrefab: {fileID: 6253218023686254846, guid: f02e0496086a7274baf3a231214398f9, type: 3}
+  switchPrefab: {fileID: 7043062803041349706, guid: 70d481c5d228655428a938b3f65adab8, type: 3}
+  gatePrefab: {fileID: 0}
   boardTilePrefab: {fileID: 2444709825185522148, guid: dbc604c8a673ea6498aaf9ca569b2e7a, type: 3}
   tracePrefab: {fileID: 1514149792772791552, guid: 651a6812693f1574aae1aa1e60f8d0e8, type: 3}
   traceBendPrefab: {fileID: 0}
@@ -38,6 +40,8 @@ MonoBehaviour:
   viaVariants: []
   startVariants: []
   goalVariants: []
+  switchVariants: []
+  gateVariants: []
   boardTileVariants: []
   traceVariants: []
   traceBendVariants: []

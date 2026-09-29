@@ -27,6 +27,7 @@ namespace Pcb
         public GameObject startPrefab;
         public GameObject goalPrefab;
         public GameObject switchPrefab;
+        public GameObject gatePrefab;
         [Tooltip("One repeatable board tile, thickness along Z. Resized to fill boardTileSize x boardTileSize x boardThickness and repeated across the whole board.")]
         public GameObject boardTilePrefab;
         [Tooltip("One straight piece of trace, length along X, height along Z. Stretched to each segment's length x traceWidth x traceHeight.")]
@@ -50,6 +51,7 @@ namespace Pcb
         public GameObject[] startVariants;
         public GameObject[] goalVariants;
         public GameObject[] switchVariants;
+        public GameObject[] gateVariants;
         public GameObject[] boardTileVariants;
         public GameObject[] traceVariants;
         public GameObject[] traceBendVariants;

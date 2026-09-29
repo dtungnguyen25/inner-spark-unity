@@ -51,7 +51,10 @@ namespace Pcb
 
         void Start()
         {
-            var sceneBoard = FindAnyObjectByType<Board>();
+            var allSceneBoards = FindObjectsByType<Board>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (var b in allSceneBoards) b.gameObject.SetActive(false);
+            
+            var sceneBoard = allSceneBoards.Length > 0 ? allSceneBoards[0] : null;
             bool levelsAvailable = levels && levels.Count > 0;
 
             // Arrived via Main Menu / Stage Select: that choice always wins, even if a Board happens
@@ -59,20 +62,17 @@ namespace Pcb
             // Editor would silently ignore Stage Select and just play whatever's in the scene.
             if (levelsAvailable && GameFlow.HasPendingRequest)
             {
-                if (sceneBoard) sceneBoard.gameObject.SetActive(false);
                 GoTo(GameFlow.TakeRequestedLevel(startLevel));
             }
             else if (sceneBoard && (Application.isEditor || !levelsAvailable))
             {
                 // Editor: play the board being edited, keeping an untouched copy for restarts.
-                sceneBoard.gameObject.SetActive(false);
                 template = sceneBoard.gameObject;
                 index = levels ? levels.IndexOf(sceneBoard.levelName) : -1;
                 Spawn(showDialog: true);
             }
             else if (levelsAvailable)
             {
-                if (sceneBoard) sceneBoard.gameObject.SetActive(false); // builds always start from the Level List
                 GoTo(GameFlow.TakeRequestedLevel(startLevel));
             }
             else Debug.LogError("[PCB] No Board in the scene and no levels in the Level List.", this);

@@ -145,6 +145,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &1148274916313509251
 GameObject:
   m_ObjectHideFlags: 0
@@ -426,6 +428,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &4154299463946337301
 GameObject:
   m_ObjectHideFlags: 0
@@ -621,6 +625,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &4485237423245509512
 GameObject:
   m_ObjectHideFlags: 0
@@ -668,6 +674,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &4588305851934321744
 GameObject:
   m_ObjectHideFlags: 0
@@ -764,6 +772,8 @@ MonoBehaviour:
   type: 3
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &4915330960136719182
 GameObject:
   m_ObjectHideFlags: 0
@@ -811,6 +821,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &5012779649766754946
 GameObject:
   m_ObjectHideFlags: 0
@@ -858,6 +870,8 @@ MonoBehaviour:
   type: 0
   layer: 1
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &5061032436156111842
 GameObject:
   m_ObjectHideFlags: 0
@@ -1001,6 +1015,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &5767761456029161256
 GameObject:
   m_ObjectHideFlags: 0
@@ -1048,6 +1064,8 @@ MonoBehaviour:
   type: 2
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &6091113151912113450
 GameObject:
   m_ObjectHideFlags: 0
@@ -1144,6 +1162,8 @@ MonoBehaviour:
   type: 0
   layer: 1
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &6608755836651102975
 GameObject:
   m_ObjectHideFlags: 0
@@ -1191,6 +1211,8 @@ MonoBehaviour:
   type: 0
   layer: 1
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &6923245255259141408
 GameObject:
   m_ObjectHideFlags: 0
@@ -1340,6 +1362,15 @@ MonoBehaviour:
   levelName: Level 02
   theme: {fileID: 11400000, guid: ffa1e0a639d45c241bbe1bad221dd486, type: 2}
   dialogSequence: {fileID: 11400000, guid: 53f206e3b5db360469c64348b0169340, type: 2}
+  look:
+    boardTile: {fileID: 0}
+    trace: {fileID: 0}
+    traceBend: {fileID: 0}
+    capacitor: {fileID: 0}
+    via: {fileID: 0}
+    start: {fileID: 0}
+    goal: {fileID: 0}
+    switchNode: {fileID: 0}
   cellSize: 0.5
   sizeInCells: {x: 6, y: 8}
   inputTolerance: 0.5
@@ -1441,3 +1472,5 @@ MonoBehaviour:
   type: 0
   layer: 1
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
