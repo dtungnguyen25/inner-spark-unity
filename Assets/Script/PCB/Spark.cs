@@ -122,22 +122,44 @@ namespace Pcb
             AnimateVisuals();
         }
 
+        float inputGraceTimer;
+
         void ReadInput()
         {
             // Paused: drop anything queued so nothing fires the moment play resumes.
             bool paused = PauseMenu.GamePaused;
-            if (paused) hasQueuedMove = hasQueuedFlip = false;
+            if (paused) { hasQueuedMove = hasQueuedFlip = false; inputGraceTimer = 0f; }
             else if (flipAction.WasPressedThisFrame()) hasQueuedFlip = true;
 
             Vector2 v = moveAction.ReadValue<Vector2>();
+
+            if (inputGraceTimer > 0f)
+            {
+                if (!paused)
+                {
+                    inputGraceTimer -= Time.deltaTime;
+                    if (v.sqrMagnitude >= 0.25f)
+                    {
+                        queuedMove = v.normalized;
+                        lastSector = Mathf.RoundToInt(Mathf.Atan2(v.y, v.x) / (Mathf.PI * 0.25f)) & 7;
+                    }
+                    if (inputGraceTimer <= 0f)
+                    {
+                        hasQueuedMove = true;
+                    }
+                }
+                return;
+            }
+
             if (v.sqrMagnitude < 0.25f) { lastSector = -1; return; }
             // Treat each new 8-way direction as a fresh press, so holding keys doesn't auto-repeat.
             int sector = Mathf.RoundToInt(Mathf.Atan2(v.y, v.x) / (Mathf.PI * 0.25f)) & 7;
             if (sector == lastSector) return;
             lastSector = sector; // still tracked while paused, so a key held through Resume doesn't count as a new press
             if (paused) return;
+            
             queuedMove = v.normalized;
-            hasQueuedMove = true;
+            inputGraceTimer = 0.08f; // 80ms grace window to combine rolling inputs
         }
 
         /// <summary>The back of the board is seen mirrored, so screen-right is board-left there.</summary>
