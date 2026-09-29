@@ -7,6 +7,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: BahnMiScreen
+    second: {fileID: 2100000, guid: 3cddb703513c93648b0c409ea7af2747, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: ColorVariations
     second: {fileID: 2100000, guid: 524247bf77f719646a9f19ec980e2779, type: 2}
   - first:
@@ -27,13 +32,88 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Grey
+    second: {fileID: 2100000, guid: f0d6c41ff80efc749977c30db90a3e64, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: Lightbulb
     second: {fileID: 2100000, guid: 7b00beba044a16844b1f3f6f67ea8b72, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Led_Blue
+    second: {fileID: 2100000, guid: b81e734f999a4f24bafb2b4034d2828f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Led_Purple
+    second: {fileID: 2100000, guid: 1ff4f88788bd849409834678d05842de, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Led_Yellow
+    second: {fileID: 2100000, guid: 3ef5d930c906cf94480c7bdd3c45e8ce, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_NodeMetalWhite
+    second: {fileID: 2100000, guid: 47c2c7c42785a0b4793934c47dce24a3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Node_Black
+    second: {fileID: 2100000, guid: f09997bddb5c43b46a3269e87ab2f27e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Node_Blue
+    second: {fileID: 2100000, guid: 4e1cea98fc702ce42af6cc07b31a56c5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Node_Green
+    second: {fileID: 2100000, guid: 452b45682bfa27e429c387dd9b674b3f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Node_Grey
+    second: {fileID: 2100000, guid: eab632b96fed5394eb4e14d46a3ff808, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Node_MetalGold
+    second: {fileID: 2100000, guid: beba865bec8a1c640b5996c3028862fe, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Node_Orange
+    second: {fileID: 2100000, guid: 03061c99156de9b45a781b27981da0b0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Node_Red
+    second: {fileID: 2100000, guid: eacfbb3af4317524e8489fdcadbe32c7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Node_White
+    second: {fileID: 2100000, guid: dacb70e9b442b1c48bff6e333d7ed7c5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_PCBboardGreen
+    second: {fileID: 2100000, guid: a37ef20806dd61f4fb34fcff6e49b318, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: Terrain
     second: {fileID: 2100000, guid: 8c68e518bb7152841a30f6f9f8e96da4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: black
+    second: {fileID: 2100000, guid: 6a3e92afcd6d6ff4d84a47498f8a2f4a, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -79,6 +159,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: plant
     second: {fileID: 2100000, guid: 28a1c61210f76034caba84ebed7556f7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wires
+    second: {fileID: 2100000, guid: 8275bad0b945aa44b981792ac4836b15, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
