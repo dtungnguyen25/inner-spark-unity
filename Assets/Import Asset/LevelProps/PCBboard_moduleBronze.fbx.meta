@@ -3,7 +3,27 @@ guid: cacc55d07ae05fb43a987d2f82eea515
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_PCBboardBronze
+    second: {fileID: 2100000, guid: 1556210066d5f1e45a44aed3905986de, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: T_PCB_BaseBronze1K copy
+    second: {fileID: 2800000, guid: 949c3b63a4d35b1449e26676b2737173, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: T_PCB_Metallic1K
+    second: {fileID: 2800000, guid: 0a1984844921c234d88d336b5d3d8092, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: T_PCB_Normal1K
+    second: {fileID: 2800000, guid: 17107944f562ce14683d619e2fdba75e, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
