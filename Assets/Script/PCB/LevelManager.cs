@@ -19,6 +19,8 @@ namespace Pcb
         public PauseMenu pauseMenu;
         [Tooltip("Optional. Shown before play if the current level has a DialogSequence assigned.")]
         public DialogController dialogController;
+        [Tooltip("Optional. Shown when the current level is won.")]
+        public WinPanel winPanel;
 
         GameObject template; // what Restart re-creates: a level prefab, or the disabled scene board
         int index = -1;
@@ -28,7 +30,7 @@ namespace Pcb
         bool won;
         float wonAt;
         InputAction restartAction, confirmAction;
-        GUIStyle hudStyle, bigStyle;
+        GUIStyle hudStyle;
 
         public Board CurrentBoard => current;
 
@@ -95,6 +97,7 @@ namespace Pcb
             if (spark) spark.Arrived -= OnArrived;
             if (rig) Destroy(rig.gameObject); // takes the board and the spark with it
             won = false;
+            if (winPanel) winPanel.Hide();
 
             var go = Instantiate(template);
             go.name = template.name;
@@ -128,6 +131,7 @@ namespace Pcb
             won = true;
             wonAt = Time.time;
             spark.enabled = false;
+            if (winPanel) winPanel.Show();
         }
 
         void Update()
@@ -141,29 +145,20 @@ namespace Pcb
 
         void OnGUI()
         {
-            if (!current) return;
+            if (!current || won) return; // WinPanel takes over once won
             if (pauseMenu && pauseMenu.IsPaused) return;
             if (dialogController && dialogController.IsShowing) return;
-            if (hudStyle == null)
-            {
-                hudStyle = new GUIStyle(GUI.skin.label) { richText = true };
-                bigStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, richText = true };
-            }
+            if (hudStyle == null) hudStyle = new GUIStyle(GUI.skin.label) { richText = true };
             int font = Mathf.Max(12, Screen.height / 40);
             hudStyle.fontSize = font;
-            bigStyle.fontSize = Mathf.Max(24, Screen.height / 12);
 
             string number = index >= 0 && levels ? $"{index + 1}/{levels.Count}" : "unsaved";
             string side = current.View == PcbLayer.Front ? "FRONT" : "<color=#7fd4ff>BACK</color>";
             string hud = $"<b>{current.levelName}</b>  ({number})\nSide: <b>{side}</b>\n" +
                          $"<size={font * 3 / 4}>Move: WASD / Arrows   Flip (on via): Space   Inspect: drag mouse   Restart: R</size>";
-            if (spark && !won && !spark.IsMoving && !spark.IsTurning && spark.CurrentNode && spark.CurrentNode.IsVia)
+            if (spark && !spark.IsMoving && !spark.IsTurning && spark.CurrentNode && spark.CurrentNode.IsVia)
                 hud += "\n<color=#ffe08a>On a via: press Space to flip side</color>";
             GUI.Label(new Rect(16, 12, Screen.width - 32, Screen.height * 0.3f), hud, hudStyle);
-
-            if (won)
-                GUI.Label(new Rect(0, 0, Screen.width, Screen.height),
-                    $"<b>CIRCUIT COMPLETE</b>\n<size={bigStyle.fontSize / 3}>Space / Enter: next board    R: replay</size>", bigStyle);
         }
     }
 }
