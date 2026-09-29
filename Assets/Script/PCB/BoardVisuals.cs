@@ -131,7 +131,12 @@ namespace Pcb
             if (model)
             {
                 var m = Object.Instantiate(model, g, false);
-                m.transform.localRotation = side == PcbLayer.Back ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
+                if (side == PcbLayer.Back)
+                {
+                    var lp = m.transform.localPosition;
+                    m.transform.localPosition = new Vector3(-lp.x, lp.y, -lp.z);
+                    m.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * m.transform.localRotation;
+                }
                 list.AddRange(m.GetComponentsInChildren<Renderer>(true));
                 return;
             }
@@ -195,21 +200,26 @@ namespace Pcb
             float t = theme.boardThickness;
             Vector2 p = board.WorldToLocal(decor.transform.position);
             var g = Group(root, decor.name, new Vector3(p.x, p.y, Surface(decor.layer, t)), decor);
-            var rotation = Quaternion.Euler(0f, 0f, decor.rotationDegrees) *
-                (decor.layer == PcbLayer.Back ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity);
+            g.localRotation = Quaternion.Euler(0f, 0f, decor.rotationDegrees);
 
             var model = board.DecorationModel(decor);
             if (model)
             {
                 var m = Object.Instantiate(model, g, false);
-                m.transform.localRotation = rotation;
+                if (decor.layer == PcbLayer.Back)
+                {
+                    var lp = m.transform.localPosition;
+                    m.transform.localPosition = new Vector3(-lp.x, lp.y, -lp.z);
+                    m.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * m.transform.localRotation;
+                }
                 list.AddRange(m.GetComponentsInChildren<Renderer>(true));
                 return;
             }
 
             // Generic placeholder until real art is assigned in PcbTheme.decorationPrefabs.
             float thickness = 0.02f;
-            Part(g, Cube, new Vector3(0f, 0f, Out(decor.layer) * thickness * 0.5f), rotation,
+            var flip = decor.layer == PcbLayer.Back ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
+            Part(g, Cube, new Vector3(0f, 0f, Out(decor.layer) * thickness * 0.5f), flip,
                 new Vector3(0.22f, 0.12f, thickness), theme.metalMaterial, list);
         }
 

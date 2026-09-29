@@ -103,9 +103,17 @@ namespace Pcb
         /// <summary>Re-collects nodes and traces, rebuilds the movement graph and (if anything changed) the 3D look.</summary>
         public void Rebuild()
         {
-            GetComponentsInChildren(true, nodes);
-            GetComponentsInChildren(true, traces);
-            GetComponentsInChildren(true, decorations);
+            nodes.Clear();
+            foreach (var c in GetComponentsInChildren<PcbNode>(true))
+                if ((c.gameObject.hideFlags & HideFlags.DontSave) == 0) nodes.Add(c);
+
+            traces.Clear();
+            foreach (var c in GetComponentsInChildren<Trace>(true))
+                if ((c.gameObject.hideFlags & HideFlags.DontSave) == 0) traces.Add(c);
+
+            decorations.Clear();
+            foreach (var c in GetComponentsInChildren<PcbDecoration>(true))
+                if ((c.gameObject.hideFlags & HideFlags.DontSave) == 0) decorations.Add(c);
             RemoveLegacyComponents();
             BuildGraph();
 
