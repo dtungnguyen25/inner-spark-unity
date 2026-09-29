@@ -138,6 +138,16 @@ namespace Pcb
                     m.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * m.transform.localRotation;
                 }
                 list.AddRange(m.GetComponentsInChildren<Renderer>(true));
+
+                if (node.IsVia)
+                {
+                    // Vias need to appear on both sides of the board.
+                    var m2 = Object.Instantiate(model, g, false);
+                    var lp = m2.transform.localPosition;
+                    m2.transform.localPosition = new Vector3(-lp.x, lp.y, t - lp.z);
+                    m2.transform.localRotation = Quaternion.Euler(0f, 180f, 0f) * m2.transform.localRotation;
+                    list.AddRange(m2.GetComponentsInChildren<Renderer>(true));
+                }
                 return;
             }
 
