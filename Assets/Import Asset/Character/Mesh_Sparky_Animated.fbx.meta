@@ -3,7 +3,27 @@ guid: 1518e54a719f7614986b0cff7fb43853
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Sparky_Face
+    second: {fileID: 2100000, guid: a694ff4925ed45044a874d05202e16a4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Sparky_material
+    second: {fileID: 2100000, guid: 98f814aa16e3fb24ca1ae83cc548b93b, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: T_Palette
+    second: {fileID: 2800000, guid: c40838051320fe04aa1247c59a8498b2, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: T_Sparky_Face_1
+    second: {fileID: 2800000, guid: 67eb387101280544da6a7ea5cd04bc1b, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
