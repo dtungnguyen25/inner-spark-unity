@@ -168,6 +168,13 @@ namespace Pcb
 
         void TryFlip()
         {
+            if (CurrentNode.type == NodeType.Switch)
+            {
+                var switchMech = CurrentNode.GetComponent<SwitchMechanic>();
+                if (switchMech) switchMech.Toggle();
+                return;
+            }
+
             if (!CurrentNode.IsVia) { Block(); return; }
             turnFromZ = transform.localPosition.z;
             Layer = Layer.Other();
