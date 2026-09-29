@@ -3,7 +3,17 @@ guid: c27faf03266c4c2429f2f714d11361aa
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Led_Yellow
+    second: {fileID: 2100000, guid: 3ef5d930c906cf94480c7bdd3c45e8ce, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_NodeMetalWhite
+    second: {fileID: 2100000, guid: 47c2c7c42785a0b4793934c47dce24a3, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
