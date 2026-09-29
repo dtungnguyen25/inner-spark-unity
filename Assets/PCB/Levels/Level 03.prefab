@@ -47,6 +47,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &584094097651310952
 GameObject:
   m_ObjectHideFlags: 0
@@ -94,6 +96,8 @@ MonoBehaviour:
   type: 0
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &670217672156396508
 GameObject:
   m_ObjectHideFlags: 0
@@ -141,6 +145,8 @@ MonoBehaviour:
   type: 0
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &846043042950512588
 GameObject:
   m_ObjectHideFlags: 0
@@ -236,6 +242,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &1161527446880997529
 GameObject:
   m_ObjectHideFlags: 0
@@ -331,6 +339,8 @@ MonoBehaviour:
   type: 3
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &1680841792590563740
 GameObject:
   m_ObjectHideFlags: 0
@@ -527,6 +537,8 @@ MonoBehaviour:
   type: 0
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &2340722396336990778
 GameObject:
   m_ObjectHideFlags: 0
@@ -671,6 +683,8 @@ MonoBehaviour:
   type: 0
   layer: 1
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &3027706513568480512
 GameObject:
   m_ObjectHideFlags: 0
@@ -718,6 +732,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &3180897557306374295
 GameObject:
   m_ObjectHideFlags: 0
@@ -816,6 +832,8 @@ MonoBehaviour:
   type: 0
   layer: 1
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &3464555797730475893
 GameObject:
   m_ObjectHideFlags: 0
@@ -863,6 +881,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &3632867845671819991
 GameObject:
   m_ObjectHideFlags: 0
@@ -959,6 +979,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &4580762829786871916
 GameObject:
   m_ObjectHideFlags: 0
@@ -1156,6 +1178,8 @@ MonoBehaviour:
   type: 1
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &5478092363548806687
 GameObject:
   m_ObjectHideFlags: 0
@@ -1305,6 +1329,8 @@ MonoBehaviour:
   type: 0
   layer: 1
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &6296209496784454033
 GameObject:
   m_ObjectHideFlags: 0
@@ -1352,6 +1378,8 @@ MonoBehaviour:
   type: 0
   layer: 1
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &6516822987539837476
 GameObject:
   m_ObjectHideFlags: 0
@@ -1399,6 +1427,8 @@ MonoBehaviour:
   type: 0
   layer: 1
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &6563341869083128756
 GameObject:
   m_ObjectHideFlags: 0
@@ -1447,6 +1477,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Pcb.Board
   levelName: Level 03
   theme: {fileID: 11400000, guid: ffa1e0a639d45c241bbe1bad221dd486, type: 2}
+  dialogSequence: {fileID: 0}
+  look:
+    boardTile: {fileID: 0}
+    trace: {fileID: 0}
+    traceBend: {fileID: 0}
+    capacitor: {fileID: 0}
+    via: {fileID: 0}
+    start: {fileID: 0}
+    goal: {fileID: 0}
   cellSize: 0.5
   sizeInCells: {x: 10, y: 10}
   inputTolerance: 0.5
@@ -1691,6 +1730,8 @@ MonoBehaviour:
   type: 0
   layer: 1
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &7750243874373750342
 GameObject:
   m_ObjectHideFlags: 0
@@ -1788,6 +1829,8 @@ MonoBehaviour:
   type: 1
   layer: 1
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &8124729352736505030
 GameObject:
   m_ObjectHideFlags: 0
@@ -1885,6 +1928,8 @@ MonoBehaviour:
   type: 0
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &8882722188223267884
 GameObject:
   m_ObjectHideFlags: 0
@@ -1932,6 +1977,8 @@ MonoBehaviour:
   type: 0
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &8971890613092845637
 GameObject:
   m_ObjectHideFlags: 0
@@ -1979,6 +2026,8 @@ MonoBehaviour:
   type: 2
   layer: 0
   chipSize: {x: 1, y: 1.5}
+  rotationDegrees: 0
+  model: {fileID: 0}
 --- !u!1 &9051521212016559716
 GameObject:
   m_ObjectHideFlags: 0

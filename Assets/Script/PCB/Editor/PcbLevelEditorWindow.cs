@@ -749,7 +749,10 @@ public partial class PcbLevelEditorWindow : EditorWindow
                 Add($"{t.name}: connects to a node on the other side. Use a Via to change side.", t);
         }
 
-        var cardinals = new[] { Vector2.right, Vector2.up, Vector2.left, Vector2.down };
+        var directions8 = new[] { 
+            Vector2.right, Vector2.up, Vector2.left, Vector2.down,
+            new Vector2(1, 1), new Vector2(-1, 1), new Vector2(-1, -1), new Vector2(1, -1)
+        };
         foreach (var n in board.Nodes)
         {
             var exits = board.GetExits(n);
@@ -769,11 +772,11 @@ public partial class PcbLevelEditorWindow : EditorWindow
                 }
 
                 bool reachable = false;
-                foreach (var dir in cardinals)
+                foreach (var dir in directions8)
                     if (board.TryPickExit(n, a.layer, dir, out var picked) && picked.trace == a.trace && picked.reversed == a.reversed)
                         reachable = true;
                 if (!reachable)
-                    Add($"{n.name}: '{a.trace.name}' can only be taken with a diagonal input. Consider starting it straight.", a.trace);
+                    Add($"{n.name}: '{a.trace.name}' cannot be taken reliably with an 8-way input. Consider adjusting its angle.", a.trace);
             }
             if (n.IsVia && !(front && back))
                 Add($"{n.name}: via only has traces on one side, so flipping here is useless.", n);
